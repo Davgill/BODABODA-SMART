@@ -1,5 +1,5 @@
 export const API_BASE_URL = (
-  process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5000/api'
+  process.env.EXPO_PUBLIC_API_URL ?? 'https://bodasmart-api.onrender.com/api'
 ).replace(/\/+$/, '');
 
 export interface Rider {

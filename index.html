@@ -1398,6 +1398,16 @@
                 const response = await fetch(
                     `/api/places/search?${searchParams.toString()}`
                 );
+                if (!response.headers.get("content-type")?.includes("application/json")) {
+                    if (response.status === 404) {
+                        throw new Error(
+                            "Destination search API returned HTTP 404. Check the Render API URL in Vercel's vercel.json rewrite, then redeploy."
+                        );
+                    }
+                    throw new Error(
+                        `Destination search API returned an invalid response (HTTP ${response.status}).`
+                    );
+                }
                 const data = await response.json();
                 if (!response.ok) {
                     const error = new Error(data.error || "Place search failed.");

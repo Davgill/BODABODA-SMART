@@ -20,17 +20,31 @@ saved bike-efficiency preference.
    npx expo start
    ```
 
-The app uses `http://localhost:5000/api` by default. That works for Expo Web and
-the iOS simulator when the API runs on the same computer. For an Android
-emulator, set `EXPO_PUBLIC_API_URL` in `bodasmart-mobile/.env` to
-`http://10.0.2.2:5000/api`. For a physical phone, use the computer's LAN IP
-instead, for example `http://192.168.1.20:5000/api`, and make sure the phone can
-reach port 5000. Restart Expo after changing `.env`.
+The app uses the deployed API at `https://bodasmart-api.onrender.com/api` by
+default. If Render assigns a different service URL, set
+`EXPO_PUBLIC_API_URL` to that service's `/api` URL in
+`bodasmart-mobile/.env` before starting Expo, or configure it in the
+environment used to build the mobile app. Restart Expo or rebuild the app after
+changing the value.
 
-The location permission is used only to set a trip's pickup point. You can
-instead search for and select a pickup manually. Route distance and time come
-from the configured OSRM driving service; estimated fares use the server's
-current fuel index. Estimates are not motorcycle-specific traffic predictions.
+For local development, set `EXPO_PUBLIC_API_URL` in
+`bodasmart-mobile/.env` to `http://localhost:5000/api` for Expo Web and the iOS
+simulator, `http://10.0.2.2:5000/api` for an Android emulator, or the computer's
+LAN address (for example, `http://192.168.1.20:5000/api`) for a physical phone.
+The phone and computer must be on a network that allows the phone to reach port
+5000.
+
+The native iOS and Android apps request foreground location permission when the
+rider taps **Use my current location**. Grant the permission and enable the
+device's location services. On Expo Web or the web portal, location requires
+HTTPS (the deployed Vercel URL is secure) and browser permission; if unavailable
+or denied, search for or select a pickup point manually. No app can obtain a
+device location when its user, operating system, browser, or hardware blocks
+location access.
+
+Route distance and time come from the configured OSRM driving service;
+estimated fares use the server's current fuel index. Estimates are not
+motorcycle-specific traffic predictions.
 
 ## Checks
 
