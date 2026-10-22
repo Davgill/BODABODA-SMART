@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: bodasmart-api
+    runtime: node
+    plan: starter
+    buildCommand: npm ci
+    startCommand: npm run server
+    disk:
+      name: bodasmart-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_FILE
+        value: /var/data/bodasmart.db
+      - key: ADMIN_PASSCODE
+        sync: false

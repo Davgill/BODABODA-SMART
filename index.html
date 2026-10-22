@@ -1,0 +1,2227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BodaSmart - Rider Portal & Live Meter</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+    <link rel="stylesheet" href="/bodasmart-theme.css">
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Inter", Arial, sans-serif;
+            background: #f9fafb;
+            color: #1f2937;
+            margin: 0;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid #f3f4f6;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .btn-primary,
+        .btn-green,
+        .btn-red,
+        .btn-gray {
+            color: white;
+            font-weight: 700;
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-green {
+            background: #16a34a;
+        }
+
+        .btn-green:hover {
+            background: #15803d;
+        }
+
+        .btn-red {
+            background: #dc2626;
+        }
+
+        .btn-red:hover {
+            background: #b91c1c;
+        }
+
+        .btn-gray {
+            background: #6b7280;
+        }
+
+        .btn-gray:hover {
+            background: #4b5563;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            font-weight: 700;
+            font-size: 14px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #6b7280;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .profile-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .profile-label {
+            display: block;
+            color: #6b7280;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .profile-value {
+            display: block;
+            color: #111827;
+            font-size: 13px;
+            font-weight: 700;
+            overflow-wrap: anywhere;
+        }
+
+        .gps-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 800;
+        }
+
+        .gps-status::before {
+            content: "";
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .destination-results {
+            display: grid;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .destination-result {
+            width: 100%;
+            padding: 10px;
+            text-align: left;
+            color: #1f2937;
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .destination-result:hover,
+        .destination-result:focus {
+            border-color: #2563eb;
+            background: #eff6ff;
+        }
+
+        .destination-result {
+            white-space: pre-line;
+        }
+
+        @media (max-width: 760px) {
+            .profile-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .top-nav-inner {
+                align-items: flex-start !important;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .top-nav-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .tab-btn {
+                padding: 10px 8px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+
+<body class="rider-app">
+
+    <nav style="background:#2563eb;color:white;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+        <div
+            class="top-nav-inner"
+            style="max-width:1100px;margin:0 auto;padding:16px;display:flex;justify-content:space-between;align-items:center;"
+        >
+            <img
+                class="brand-logo"
+                src="/bodasmart-brand.png"
+                alt="BodaSmart — Ride smart, go further"
+            >
+
+            <div
+                class="top-nav-actions"
+                style="display:flex;gap:12px;align-items:center;"
+            >
+                <span
+                    id="userWelcomeDisplay"
+                    style="font-size:14px;font-weight:600;"
+                >
+                    👤 Guest Rider
+                </span>
+
+                <a
+                    href="/login"
+                    id="loginLink"
+                    class="hidden"
+                    style="background:#16a34a;color:white;padding:7px 14px;border-radius:5px;font-size:13px;font-weight:700;text-decoration:none;"
+                >
+                    Login
+                </a>
+
+                <a
+                    href="/admin"
+                    style="background:#1d4ed8;color:white;padding:7px 14px;border-radius:5px;font-size:13px;font-weight:700;text-decoration:none;"
+                >
+                    Admin Portal
+                </a>
+
+                <button
+                    type="button"
+                    id="logoutButton"
+                    onclick="handleLogout()"
+                    style="background:#ef4444;color:white;padding:7px 14px;border-radius:5px;font-size:13px;font-weight:700;border:none;cursor:pointer;"
+                >
+                    Logout
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main style="max-width:1100px;margin:0 auto;padding:32px 16px;">
+
+        <section class="card">
+            <div
+                style="display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;"
+            >
+                <div>
+                    <h2 style="font-size:22px;margin:0 0 6px;color:#111827;">
+                        Rider Navigation & Meter Console
+                    </h2>
+
+                    <p style="color:#6b7280;font-size:14px;margin:0;">
+                        Select a destination, calculate the route, and record the trip under the rider profile.
+                    </p>
+                </div>
+
+                <div style="display:flex;gap:12px;">
+                    <div
+                        style="background:#eff6ff;border:1px solid #dbeafe;padding:12px;border-radius:8px;text-align:center;min-width:120px;"
+                    >
+                        <p style="font-size:10px;color:#3b82f6;font-weight:800;text-transform:uppercase;margin:0;">
+                            Fuel Price
+                        </p>
+
+                        <p
+                            id="portalFuelPrice"
+                            style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#1d4ed8;margin:4px 0 0;"
+                        >
+                            KSh 200
+                        </p>
+                    </div>
+
+                    <div
+                        style="background:#f0fdf4;border:1px solid #dcfce7;padding:12px;border-radius:8px;text-align:center;min-width:120px;"
+                    >
+                        <p style="font-size:10px;color:#16a34a;font-weight:800;text-transform:uppercase;margin:0;">
+                            Average Fare
+                        </p>
+
+                        <p
+                            id="portalAvgFare"
+                            style="font-family:'Plus Jakarta Sans',sans-serif;font-size:20px;font-weight:800;color:#15803d;margin:4px 0 0;"
+                        >
+                            KSh 0
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="riderProfileCard" class="hidden">
+                <div
+                    style="margin-top:22px;border-top:1px solid #e5e7eb;padding-top:18px;"
+                >
+                    <h3 style="font-size:16px;margin:0;color:#111827;">
+                        Active Rider Profile
+                    </h3>
+
+                    <div class="profile-grid">
+                        <div class="profile-item">
+                            <span class="profile-label">Name</span>
+                            <span id="profileName" class="profile-value">-</span>
+                        </div>
+
+                        <div class="profile-item">
+                            <span class="profile-label">Number Plate</span>
+                            <span id="profilePlate" class="profile-value">-</span>
+                        </div>
+
+                        <div class="profile-item">
+                            <span class="profile-label">Phone</span>
+                            <span id="profilePhone" class="profile-value">-</span>
+                        </div>
+
+                        <div class="profile-item">
+                            <span class="profile-label">National ID</span>
+                            <span id="profileIdNumber" class="profile-value">-</span>
+                        </div>
+
+                        <div class="profile-item">
+                            <span class="profile-label">Email</span>
+                            <span id="profileEmail" class="profile-value">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div
+                id="guestNotice"
+                class="hidden"
+                style="margin-top:18px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:12px;border-radius:8px;font-size:13px;"
+            >
+                You can calculate a route as a guest, but you must log in before the trip can be recorded for admin tracking.
+            </div>
+        </section>
+
+        <div
+            style="display:flex;border-bottom:1px solid #e5e7eb;margin-bottom:24px;overflow-x:auto;"
+        >
+            <button
+                type="button"
+                onclick="switchMode('calculator')"
+                id="tabCalcBtn"
+                class="tab-btn active"
+            >
+                📍 Destination Calculator
+            </button>
+
+            <button
+                type="button"
+                onclick="switchMode('map')"
+                id="tabMapBtn"
+                class="tab-btn"
+            >
+                🗺️ Live Route Map
+            </button>
+
+            <button
+                type="button"
+                onclick="switchMode('meter')"
+                id="tabMeterBtn"
+                class="tab-btn"
+            >
+                ⏱️ Live Boda Meter
+            </button>
+        </div>
+
+        <section
+            id="calculatorModeSection"
+            class="card"
+            style="max-width:600px;margin-left:auto;margin-right:auto;"
+        >
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <h3 style="font-size:20px;margin:0;color:#111827;">
+                    Select Destination
+                </h3>
+
+                <div>
+                    <label
+                        style="display:block;font-size:11px;font-weight:800;text-transform:uppercase;color:#4b5563;margin-bottom:5px;"
+                    >
+                        Pickup Point
+                    </label>
+
+                    <div style="display:flex;gap:8px;">
+                        <input
+                            type="number"
+                            id="pickupLat"
+                            placeholder="Latitude"
+                            class="input-field"
+                            step="any"
+                            aria-label="Pickup latitude"
+                        >
+
+                        <input
+                            type="number"
+                            id="pickupLon"
+                            placeholder="Longitude"
+                            class="input-field"
+                            step="any"
+                            aria-label="Pickup longitude"
+                        >
+                    </div>
+
+                    <p
+                        id="pickupStatus"
+                        class="gps-status"
+                        role="status"
+                        aria-live="polite"
+                        style="font-size:11px;color:#6b7280;margin:8px 0 0;"
+                    >
+                        GPS UNAVAILABLE — waiting for location request
+                    </p>
+                    <p id="pickupDetails" style="font-size:11px;color:#6b7280;margin:5px 0 0;">
+                        No pickup coordinates selected.
+                    </p>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
+                        <button type="button" id="retryGpsBtn" class="btn-primary">
+                            Detect My Location
+                        </button>
+                        <button type="button" id="useManualPickupBtn" class="btn-gray">
+                            Use Entered Coordinates
+                        </button>
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        style="display:block;font-size:11px;font-weight:800;text-transform:uppercase;color:#4b5563;margin-bottom:5px;"
+                    >
+                        Dropoff Destination Name
+                    </label>
+
+                    <div style="display:flex;gap:8px;">
+                        <input
+                            type="text"
+                            id="dropoffSearchQuery"
+                            placeholder="Karai, Kamere, Naivasha"
+                            class="input-field"
+                        >
+
+                        <button
+                            type="button"
+                            id="searchDestBtn"
+                            onclick="lookupDestinationCoords()"
+                            class="btn-primary"
+                            style="width:auto;white-space:nowrap;"
+                        >
+                            Search
+                        </button>
+                    </div>
+
+                    <input type="hidden" id="dropoffLat">
+                    <input type="hidden" id="dropoffLon">
+
+                    <p
+                        id="dropoffStatus"
+                        role="status"
+                        aria-live="polite"
+                        style="font-size:11px;color:#6b7280;margin:5px 0 0;"
+                    >
+                        Search for a destination, then select the correct result.
+                    </p>
+                    <div id="destinationResults" class="destination-results" aria-label="Destination search results"></div>
+                </div>
+
+                <button
+                    type="button"
+                    id="proceedToMapBtn"
+                    onclick="calculateRouteAndFare()"
+                    class="btn-primary"
+                    style="margin-top:5px;"
+                >
+                    Proceed to Map & Route View
+                </button>
+            </div>
+        </section>
+
+        <section
+            id="mapModeSection"
+            class="card hidden"
+            style="max-width:720px;margin-left:auto;margin-right:auto;"
+        >
+            <div
+                style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;"
+            >
+                <h3
+                    style="font-size:16px;font-weight:800;color:#111827;text-transform:uppercase;margin:0;"
+                >
+                    Route Directions Map
+                </h3>
+
+                <span style="font-size:11px;color:#9ca3af;">
+                    Powered by OpenStreetMap
+                </span>
+            </div>
+
+            <div
+                id="map"
+                style="width:100%;height:380px;border-radius:8px;border:1px solid #d1d5db;margin-bottom:16px;"
+            ></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                <button type="button" id="mapCurrentLocationBtn" class="btn-primary">
+                    Centre on current location
+                </button>
+                <button type="button" id="choosePickupOnMapBtn" class="btn-gray">
+                    Select pickup on map
+                </button>
+                <button type="button" id="chooseDestinationOnMapBtn" class="btn-gray">
+                    Select destination on map
+                </button>
+            </div>
+            <p id="mapStatus" role="status" aria-live="polite" style="font-size:12px;color:#6b7280;margin:0 0 14px;">
+                Select pickup and destination to request a road route.
+            </p>
+            <p id="mapGpsStatus" class="gps-status" role="status" aria-live="polite" style="font-size:11px;color:#6b7280;margin:0 0 14px;">
+                GPS UNAVAILABLE
+            </p>
+            <h4 style="font-size:13px;font-weight:800;color:#111827;margin:0 0 8px;">
+                Destination matches
+            </h4>
+            <div id="mapSearchResults" class="destination-results" aria-label="Destination matches on the map"></div>
+
+            <div
+                style="background:#f9fafb;padding:16px;border-radius:8px;border:1px solid #e5e7eb;display:flex;flex-direction:column;gap:12px;"
+            >
+                <h4
+                    style="font-size:14px;font-weight:800;color:#111827;text-transform:uppercase;margin:0;"
+                >
+                    Trip Summary & Fare Calculation
+                </h4>
+
+                <div
+                    style="display:flex;flex-direction:column;gap:6px;font-size:14px;"
+                >
+                    <div style="display:flex;justify-content:space-between;gap:16px;">
+                        <span style="color:#6b7280;">Pickup:</span>
+                        <span id="resPickup" style="font-weight:700;text-align:right;">—</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:16px;">
+                        <span style="color:#6b7280;">Destination:</span>
+                        <span id="resDestination" style="font-weight:700;text-align:right;">—</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#6b7280;">Road route distance:</span>
+                        <span id="resDistance" style="font-weight:800;">
+                            0.00 km
+                        </span>
+                    </div>
+
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#6b7280;">Estimated Fare:</span>
+                        <span
+                            id="resFare"
+                            style="font-weight:800;color:#16a34a;"
+                        >
+                            KSh 0
+                        </span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#6b7280;">Estimated time:</span>
+                        <span id="resDuration" style="font-weight:800;">—</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;">
+                        <span style="color:#6b7280;">Route status:</span>
+                        <span id="resRouteStatus" style="font-weight:800;">Not calculated</span>
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onclick="logTrip()"
+                    class="btn-green"
+                >
+                    Start & Record Trip
+                </button>
+
+                <p
+                    id="tripLoginHint"
+                    class="hidden"
+                    style="font-size:12px;color:#9a3412;margin:0;text-align:center;"
+                >
+                    You will be asked to log in before this trip is recorded.
+                </p>
+            </div>
+        </section>
+
+        <section
+            id="meterModeSection"
+            class="card hidden"
+            style="max-width:600px;margin-left:auto;margin-right:auto;text-align:center;"
+        >
+            <div style="margin-bottom:24px;">
+                <h3
+                    style="font-size:28px;font-weight:800;color:#111827;margin:0 0 4px;"
+                >
+                    ⏱️ Live Boda Meter
+                </h3>
+
+                <p style="color:#6b7280;font-size:14px;margin:0;">
+                    Start tracking only when the rider is ready. Fare is an estimate until the trip is recorded.
+                </p>
+            </div>
+            <p id="meterStatus" role="status" aria-live="polite" style="font-size:12px;color:#6b7280;margin:0 0 18px;">
+                Trip not started.
+            </p>
+
+            <div
+                style="display:grid;grid-template-columns:1fr 1fr;gap:16px;background:#f9fafb;padding:24px;border-radius:12px;border:1px solid #e5e7eb;margin-bottom:24px;"
+            >
+                <div>
+                    <p
+                        style="font-size:11px;color:#6b7280;text-transform:uppercase;font-weight:800;margin:0;"
+                    >
+                        Meter Distance
+                    </p>
+
+                    <p
+                        id="meterDistance"
+                        style="font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;color:#2563eb;margin:8px 0 0;"
+                    >
+                        0.00 km
+                    </p>
+                </div>
+
+                <div>
+                    <p
+                        style="font-size:11px;color:#6b7280;text-transform:uppercase;font-weight:800;margin:0;"
+                    >
+                        Current Fare
+                    </p>
+
+                    <p
+                        id="meterFare"
+                        style="font-family:'Plus Jakarta Sans',sans-serif;font-size:32px;font-weight:800;color:#16a34a;margin:8px 0 0;"
+                    >
+                        KSh 50
+                    </p>
+                </div>
+            </div>
+
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <button
+                    type="button"
+                    id="startMeterBtn"
+                    onclick="startLiveMeter()"
+                    class="btn-green"
+                    style="flex:1;font-size:16px;"
+                >
+                    ▶️ Start Meter
+                </button>
+
+                <button
+                    type="button"
+                    id="pauseMeterBtn"
+                    onclick="pauseLiveMeter()"
+                    class="btn-gray hidden"
+                    style="flex:1;font-size:16px;"
+                >
+                    ⏸️ Pause
+                </button>
+                <button type="button" id="resumeMeterBtn" onclick="resumeLiveMeter()" class="btn-green hidden" style="flex:1;font-size:16px;">
+                    ▶️ Resume
+                </button>
+                <button type="button" id="stopMeterBtn" onclick="stopLiveMeter()" class="btn-red hidden" style="flex:1;font-size:16px;">
+                    ⏹️ End & Record
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        let map = null;
+        let routeLayer = null;
+        let pickupMarker = null;
+        let destinationMarker = null;
+        let destinationSearchMarkers = [];
+        let destinationSearchResults = [];
+        let liveMarker = null;
+        let accuracyCircle = null;
+        let currentPickupLat = null;
+        let currentPickupLon = null;
+        let pickupSource = "unavailable";
+        let pickupAccuracy = null;
+        let lastGpsFixAt = null;
+        let lastReverseGeocodeAt = 0;
+        let pickupAddress = "";
+        let selectedDestination = null;
+        let currentRoute = null;
+        let routeRequestId = 0;
+        let routeRequestInProgress = false;
+        let mapSelectionMode = null;
+        let gpsWatchId = null;
+        let gpsRefreshIntervalId = null;
+        let gpsAcquisitionTimeoutId = null;
+        let gpsAcquisitionStartedAt = null;
+        let lastGpsRequestAt = 0;
+        let gpsPermissionDenied = false;
+        let gpsBestAccuracy = Infinity;
+        let currentCalculatedDistance = 0;
+        let currentCalculatedFare = 0;
+        let currentFuelPrice = 200;
+        let meterWatchId = null;
+        let meterDistanceAccumulated = 0;
+        let lastMeterPosition = null;
+        let meterState = "idle";
+        let meterLastFixAt = null;
+        const GPS_STALE_AFTER_MS = 60000;
+        const MAX_GPS_ACCURACY_METERS = 50;
+        const TARGET_GPS_ACCURACY_METERS = 25;
+        const GPS_ACQUISITION_TIMEOUT_MS = 45000;
+
+        window.addEventListener("DOMContentLoaded", () => {
+            loadDashboard();
+            checkSessionState();
+            initMap();
+            document.getElementById("retryGpsBtn")
+                .addEventListener("click", () => requestPickupGPS(false));
+            document.getElementById("useManualPickupBtn")
+                .addEventListener("click", useEnteredPickupCoordinates);
+            document.getElementById("mapCurrentLocationBtn")
+                .addEventListener("click", centreOnCurrentLocation);
+            document.getElementById("choosePickupOnMapBtn")
+                .addEventListener("click", () => setMapSelectionMode("pickup"));
+            document.getElementById("chooseDestinationOnMapBtn")
+                .addEventListener("click", () => setMapSelectionMode("destination"));
+            document.getElementById("dropoffSearchQuery")
+                .addEventListener("input", clearSelectedDestination);
+            document.getElementById("dropoffSearchQuery")
+                .addEventListener("keydown", (event) => {
+                    if (event.key === "Enter") {
+                        event.preventDefault();
+                        lookupDestinationCoords();
+                    }
+                });
+            window.setInterval(updateGpsFreshness, 5000);
+            gpsRefreshIntervalId = window.setInterval(refreshPickupGPS, 30000);
+            window.addEventListener("pagehide", stopPickupGpsTracking);
+            document.addEventListener("visibilitychange", () => {
+                if (
+                    document.visibilityState === "visible" &&
+                    pickupSource !== "manual"
+                ) {
+                    refreshPickupGPS();
+                }
+            });
+            requestPickupGPS(false);
+            restorePendingRoute();
+        });
+
+        function getActiveUser() {
+            try {
+                const storedUser =
+                    localStorage.getItem("bodasmart_user") ||
+                    localStorage.getItem("user") ||
+                    localStorage.getItem("rider");
+
+                if (!storedUser) {
+                    return null;
+                }
+
+                const user = JSON.parse(storedUser);
+
+                if (!user || !user.id) {
+                    return null;
+                }
+
+                return user;
+            } catch (error) {
+                console.error("Unable to read rider profile:", error);
+                return null;
+            }
+        }
+
+        function updateRiderProfileDisplay() {
+            const user = getActiveUser();
+
+            const welcome = document.getElementById("userWelcomeDisplay");
+            const loginLink = document.getElementById("loginLink");
+            const logoutButton = document.getElementById("logoutButton");
+            const profileCard = document.getElementById("riderProfileCard");
+            const guestNotice = document.getElementById("guestNotice");
+
+            if (!user) {
+                welcome.innerText = "👤 Guest Rider";
+                loginLink.classList.remove("hidden");
+                logoutButton.classList.add("hidden");
+                profileCard.classList.add("hidden");
+                guestNotice.classList.remove("hidden");
+                return;
+            }
+
+            const riderName = user.name || "Registered Rider";
+            const plate = user.number_plate || "No plate";
+            const phone = user.phone_number || "Not provided";
+            const idNumber = user.id_number || "Not provided";
+            const email = user.email || "Not provided";
+
+            welcome.innerText = `👤 ${riderName} (${plate})`;
+
+            document.getElementById("profileName").innerText = riderName;
+            document.getElementById("profilePlate").innerText = plate;
+            document.getElementById("profilePhone").innerText = phone;
+            document.getElementById("profileIdNumber").innerText = idNumber;
+            document.getElementById("profileEmail").innerText = email;
+
+            loginLink.classList.add("hidden");
+            logoutButton.classList.remove("hidden");
+            profileCard.classList.remove("hidden");
+            guestNotice.classList.add("hidden");
+        }
+
+        function checkSessionState() {
+            updateRiderProfileDisplay();
+        }
+
+        function initMap() {
+            if (map) {
+                return;
+            }
+
+            if (!window.L) {
+                setMapStatus("The map library did not load. Refresh the page to retry.", true);
+                return;
+            }
+
+            const container = document.getElementById("map");
+            if (!container) {
+                setMapStatus("Map container is missing from this page.", true);
+                return;
+            }
+
+            map = L.map(container).setView([0, 0], 2);
+            L.tileLayer(
+                "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+                    attribution: "&copy; OpenStreetMap contributors"
+                }
+            ).addTo(map);
+
+            map.on("tileerror", () => {
+                setMapStatus("Map tiles could not be loaded. The route service may still be available.", true);
+            });
+
+            map.on("click", (event) => {
+                if (!mapSelectionMode) {
+                    return;
+                }
+
+                if (mapSelectionMode === "pickup") {
+                    setManualPickup(
+                        event.latlng.lat,
+                        event.latlng.lng,
+                        "Selected on map"
+                    );
+                    if (selectedDestination) {
+                        calculateRouteAndFare();
+                    }
+                } else {
+                    selectDestination({
+                        name: "Map selection",
+                        address: "Destination selected on map",
+                        latitude: event.latlng.lat,
+                        longitude: event.latlng.lng
+                    });
+                }
+
+                setMapSelectionMode(null);
+            });
+        }
+
+        function setGpsIndicator(status, message) {
+            const colors = {
+                live: "#16a34a",
+                acquiring: "#d97706",
+                unavailable: "#dc2626",
+                manual: "#6b7280",
+                stale: "#dc2626"
+            };
+
+            const labels = {
+                live: "GPS LIVE",
+                acquiring: "ACQUIRING GPS",
+                unavailable: "GPS UNAVAILABLE",
+                manual: "MANUAL LOCATION",
+                stale: "GPS UNAVAILABLE — LAST FIX IS STALE"
+            };
+
+            ["pickupStatus", "mapGpsStatus"].forEach((id) => {
+                const element = document.getElementById(id);
+                if (!element) {
+                    return;
+                }
+                element.innerText = `${labels[status]}${message ? ` — ${message}` : ""}`;
+                element.style.color = colors[status];
+            });
+        }
+
+        function setMapStatus(message, isError = false) {
+            const status = document.getElementById("mapStatus");
+            if (!status) {
+                return;
+            }
+            status.innerText = message;
+            status.style.color = isError ? "#b91c1c" : "#6b7280";
+        }
+
+        function isValidCoordinatePair(latitude, longitude) {
+            return latitude !== null &&
+                latitude !== undefined &&
+                latitude !== "" &&
+                longitude !== null &&
+                longitude !== undefined &&
+                longitude !== "" &&
+                Number.isFinite(Number(latitude)) &&
+                Number.isFinite(Number(longitude)) &&
+                Number(latitude) >= -90 &&
+                Number(latitude) <= 90 &&
+                Number(longitude) >= -180 &&
+                Number(longitude) <= 180;
+        }
+
+        function hasUsablePickup() {
+            if (!isValidCoordinatePair(currentPickupLat, currentPickupLon)) {
+                return false;
+            }
+            if (pickupSource === "manual") {
+                return true;
+            }
+            return pickupSource === "live" &&
+                lastGpsFixAt !== null &&
+                Date.now() - lastGpsFixAt <= GPS_STALE_AFTER_MS;
+        }
+
+        function updatePickupMapLayers() {
+            if (!map || !isValidCoordinatePair(currentPickupLat, currentPickupLon)) {
+                return;
+            }
+            if (pickupMarker) {
+                map.removeLayer(pickupMarker);
+            }
+            pickupMarker = L.circleMarker(
+                [currentPickupLat, currentPickupLon],
+                {
+                    radius: 9,
+                    color: "#15803d",
+                    fillColor: "#22c55e",
+                    fillOpacity: 0.95,
+                    weight: 2
+                }
+            ).bindPopup(pickupSource === "live" ? "Live GPS pickup" : "Manual pickup");
+            pickupMarker.addTo(map);
+        }
+
+        function updateLiveMapLayers(latitude, longitude, accuracy) {
+            if (!map) {
+                return;
+            }
+            if (liveMarker) {
+                map.removeLayer(liveMarker);
+            }
+            liveMarker = L.circleMarker([latitude, longitude], {
+                radius: 7,
+                color: "#1d4ed8",
+                fillColor: "#3b82f6",
+                fillOpacity: 1,
+                weight: 2
+            }).bindPopup("Current GPS position").addTo(map);
+
+            if (accuracyCircle) {
+                map.removeLayer(accuracyCircle);
+            }
+            if (Number.isFinite(accuracy) && accuracy > 0) {
+                accuracyCircle = L.circle([latitude, longitude], {
+                    radius: accuracy,
+                    color: "#3b82f6",
+                    fillColor: "#60a5fa",
+                    fillOpacity: 0.12,
+                    weight: 1
+                }).addTo(map);
+            }
+        }
+
+        function applyGpsFix(position, updatePickup = true) {
+            const { latitude, longitude, accuracy } = position.coords;
+            if (!isValidCoordinatePair(latitude, longitude)) {
+                setGpsIndicator("unavailable", "The device returned invalid coordinates");
+                return;
+            }
+
+            const previousPickup = isValidCoordinatePair(
+                currentPickupLat,
+                currentPickupLon
+            )
+                ? { latitude: currentPickupLat, longitude: currentPickupLon }
+                : null;
+            lastGpsFixAt = position.timestamp || Date.now();
+            meterLastFixAt = lastGpsFixAt;
+            updateLiveMapLayers(latitude, longitude, accuracy);
+
+            if (updatePickup && meterState === "idle") {
+                currentPickupLat = latitude;
+                currentPickupLon = longitude;
+                pickupSource = "live";
+                pickupAccuracy = accuracy;
+                document.getElementById("pickupLat").value = latitude.toFixed(6);
+                document.getElementById("pickupLon").value = longitude.toFixed(6);
+                updatePickupMapLayers();
+                if (!pickupAddress || Date.now() - lastReverseGeocodeAt > 60000) {
+                    lastReverseGeocodeAt = Date.now();
+                    reverseGeocodePickup(latitude, longitude);
+                }
+            }
+
+            const accuracyMessage = Number.isFinite(accuracy)
+                ? `accuracy ±${Math.round(accuracy)} m`
+                : "accuracy unavailable";
+            setGpsIndicator("live", accuracyMessage);
+
+            const details = document.getElementById("pickupDetails");
+            const fixTime = new Date(lastGpsFixAt).toLocaleTimeString();
+            details.innerText =
+                `${pickupAddress || "Current GPS position"} · ${latitude.toFixed(6)}, ${longitude.toFixed(6)} · ${accuracyMessage} · updated ${fixTime}`;
+
+            if (Number.isFinite(accuracy) && accuracy > MAX_GPS_ACCURACY_METERS) {
+                details.innerText += " · GPS accuracy is low; waiting for a more accurate fix";
+            }
+
+            if (Number.isFinite(accuracy) && accuracy < gpsBestAccuracy) {
+                gpsBestAccuracy = accuracy;
+            }
+
+            if (Number.isFinite(accuracy) && accuracy <= TARGET_GPS_ACCURACY_METERS) {
+                finishGpsAcquisition(
+                    `High-accuracy fix acquired (±${Math.round(accuracy)} m)`
+                );
+            }
+
+            if (map && hasUsablePickup() && !currentRoute) {
+                map.setView([latitude, longitude], 15);
+            }
+
+            if (
+                updatePickup &&
+                meterState === "idle" &&
+                selectedDestination &&
+                (!routeRequestInProgress && !currentRoute ||
+                    previousPickup &&
+                    calculateHaversine(
+                        previousPickup.latitude,
+                        previousPickup.longitude,
+                        latitude,
+                        longitude
+                    ) >= 0.003)
+            ) {
+                calculateRouteAndFare();
+            }
+        }
+
+        async function reverseGeocodePickup(latitude, longitude) {
+            try {
+                const response = await fetch(
+                    `/api/places/reverse?lat=${encodeURIComponent(latitude)}&lon=${encodeURIComponent(longitude)}`
+                );
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.error || "Reverse lookup failed");
+                }
+                pickupAddress = data.address || "Current GPS position";
+                const details = document.getElementById("pickupDetails");
+                const accuracyMessage = Number.isFinite(pickupAccuracy)
+                    ? `accuracy ±${Math.round(pickupAccuracy)} m`
+                    : "accuracy unavailable";
+                details.innerText =
+                    `${pickupAddress} · ${latitude.toFixed(6)}, ${longitude.toFixed(6)} · ${accuracyMessage} · updated ${new Date(lastGpsFixAt).toLocaleTimeString()}`;
+                if (currentRoute && selectedDestination) {
+                    document.getElementById("resPickup").innerText =
+                        `${pickupAddress} (${latitude.toFixed(6)}, ${longitude.toFixed(6)})`;
+                }
+            } catch (error) {
+                console.warn("Pickup reverse geocoding failed:", error.message);
+                pickupAddress = "Current GPS position";
+            }
+        }
+
+        function finishGpsAcquisition(message) {
+            if (gpsAcquisitionTimeoutId !== null) {
+                window.clearTimeout(gpsAcquisitionTimeoutId);
+                gpsAcquisitionTimeoutId = null;
+            }
+            if (message && pickupSource === "live") {
+                document.getElementById("pickupDetails").innerText +=
+                    ` · ${message}`;
+            }
+        }
+
+        function stopPickupGpsTracking() {
+            if (gpsWatchId !== null && navigator.geolocation) {
+                navigator.geolocation.clearWatch(gpsWatchId);
+                gpsWatchId = null;
+            }
+            finishGpsAcquisition();
+            if (gpsRefreshIntervalId !== null) {
+                window.clearInterval(gpsRefreshIntervalId);
+                gpsRefreshIntervalId = null;
+            }
+        }
+
+        function handleGpsAcquisitionError(error) {
+            console.warn("GPS acquisition failed:", {
+                code: error.code,
+                message: error.message
+            });
+            finishGpsAcquisition();
+
+            const messages = {
+                1: "Location permission denied. Enable it in browser site settings, or choose a manual pickup.",
+                2: "The device could not determine its location. Retry or choose a manual pickup.",
+                3: "Location request timed out. Retry or choose a manual pickup."
+            };
+            if (error.code === 1) {
+                gpsPermissionDenied = true;
+            }
+            pickupSource = "unavailable";
+            setGpsIndicator(
+                "unavailable",
+                messages[error.code] || "Location could not be obtained; choose a manual pickup"
+            );
+        }
+
+        function requestPickupGPS(isAutomatic = false) {
+            stopPickupGpsTracking();
+            if (!isAutomatic) {
+                gpsPermissionDenied = false;
+            }
+            lastGpsRequestAt = Date.now();
+            finishGpsAcquisition();
+            gpsAcquisitionStartedAt = Date.now();
+            gpsBestAccuracy = Infinity;
+            pickupSource = "unavailable";
+            setGpsIndicator(
+                "acquiring",
+                "requesting fresh high-accuracy fixes (target ±25 m)"
+            );
+
+            if (!window.isSecureContext) {
+                setGpsIndicator(
+                    "unavailable",
+                    "Location requires HTTPS or localhost; manual coordinates remain available"
+                );
+                return;
+            }
+            if (!navigator.geolocation) {
+                setGpsIndicator(
+                    "unavailable",
+                    "This browser does not support geolocation; enter coordinates or select on the map"
+                );
+                return;
+            }
+
+            const options = {
+                enableHighAccuracy: true,
+                maximumAge: 0,
+                timeout: GPS_ACQUISITION_TIMEOUT_MS
+            };
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => applyGpsFix(position),
+                (error) => {
+                    if (!lastGpsFixAt || lastGpsFixAt < gpsAcquisitionStartedAt) {
+                        handleGpsAcquisitionError(error);
+                    } else {
+                        console.warn("One-shot GPS request failed after a live fix:", error.message);
+                    }
+                },
+                options
+            );
+
+            gpsWatchId = navigator.geolocation.watchPosition(
+                (position) => applyGpsFix(position),
+                (error) => {
+                    if (!lastGpsFixAt || lastGpsFixAt < gpsAcquisitionStartedAt) {
+                        handleGpsAcquisitionError(error);
+                    } else {
+                        console.warn("GPS refinement stopped:", error.message);
+                        finishGpsAcquisition(
+                            gpsBestAccuracy <= MAX_GPS_ACCURACY_METERS
+                                ? `Best available accuracy ±${Math.round(gpsBestAccuracy)} m`
+                                : `Best available fix is approximate (±${Math.round(gpsBestAccuracy)} m)`
+                        );
+                    }
+                },
+                options
+            );
+
+            gpsAcquisitionTimeoutId = window.setTimeout(() => {
+                finishGpsAcquisition(
+                    Number.isFinite(gpsBestAccuracy)
+                        ? `Best available accuracy ±${Math.round(gpsBestAccuracy)} m`
+                        : ""
+                );
+                if (!Number.isFinite(gpsBestAccuracy)) {
+                    pickupSource = "unavailable";
+                    setGpsIndicator("unavailable", "No GPS fix arrived before timeout");
+                }
+            }, GPS_ACQUISITION_TIMEOUT_MS);
+            gpsRefreshIntervalId = window.setInterval(refreshPickupGPS, 30000);
+        }
+
+        function updateGpsFreshness() {
+            if (
+                pickupSource === "live" &&
+                lastGpsFixAt &&
+                Date.now() - lastGpsFixAt > GPS_STALE_AFTER_MS
+            ) {
+                pickupSource = "unavailable";
+                setGpsIndicator("stale", "retry GPS or choose a manual pickup");
+                if (
+                    document.visibilityState === "visible" &&
+                    !gpsPermissionDenied &&
+                    Date.now() - lastGpsRequestAt >= 15000
+                ) {
+                    requestPickupGPS(true);
+                }
+            }
+        }
+
+        function refreshPickupGPS() {
+            if (
+                !navigator.geolocation ||
+                !window.isSecureContext ||
+                pickupSource === "manual" ||
+                gpsPermissionDenied ||
+                document.visibilityState !== "visible" ||
+                Date.now() - lastGpsRequestAt < 20000
+            ) {
+                return;
+            }
+
+            lastGpsRequestAt = Date.now();
+            navigator.geolocation.getCurrentPosition(
+                (position) => applyGpsFix(position),
+                (error) => {
+                    if (error.code === 1) {
+                        handleGpsAcquisitionError(error);
+                    } else {
+                        console.warn("Periodic GPS refresh failed:", {
+                            code: error.code,
+                            message: error.message
+                        });
+                    }
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 15000
+                }
+            );
+        }
+
+        function setManualPickup(latitude, longitude, description) {
+            if (!isValidCoordinatePair(latitude, longitude)) {
+                setGpsIndicator("unavailable", "Enter valid latitude and longitude values");
+                return false;
+            }
+
+            stopPickupGpsTracking();
+            currentPickupLat = Number(latitude);
+            currentPickupLon = Number(longitude);
+            pickupSource = "manual";
+            pickupAccuracy = null;
+            lastGpsFixAt = null;
+            pickupAddress = description || "Manual pickup";
+            document.getElementById("pickupLat").value = currentPickupLat.toFixed(6);
+            document.getElementById("pickupLon").value = currentPickupLon.toFixed(6);
+            document.getElementById("pickupDetails").innerText =
+                `${pickupAddress} · ${currentPickupLat.toFixed(6)}, ${currentPickupLon.toFixed(6)}`;
+            setGpsIndicator("manual", description || "coordinates selected manually");
+            currentRoute = null;
+            if (routeLayer && map) {
+                map.removeLayer(routeLayer);
+                routeLayer = null;
+            }
+            updatePickupMapLayers();
+            if (map) {
+                map.setView([currentPickupLat, currentPickupLon], 15);
+            }
+            return true;
+        }
+
+        function useEnteredPickupCoordinates() {
+            const latitude = document.getElementById("pickupLat").value;
+            const longitude = document.getElementById("pickupLon").value;
+            if (setManualPickup(latitude, longitude, "Entered manually")) {
+                if (selectedDestination) {
+                    calculateRouteAndFare();
+                }
+            }
+        }
+
+        function centreOnCurrentLocation() {
+            if (!lastGpsFixAt || Date.now() - lastGpsFixAt > GPS_STALE_AFTER_MS) {
+                requestPickupGPS();
+                setMapStatus("Requesting a fresh GPS fix. Retry after the location indicator updates.");
+                return;
+            }
+            map.setView([currentPickupLat, currentPickupLon], 16);
+        }
+
+        function setMapSelectionMode(mode) {
+            mapSelectionMode = mode;
+            switchMode("map");
+            setMapStatus(
+                `Click the map to choose a ${mode === "pickup" ? "manual pickup" : "destination"}.`
+            );
+        }
+
+        async function lookupDestinationCoords() {
+            const queryInput = document.getElementById("dropoffSearchQuery");
+            const statusElement = document.getElementById("dropoffStatus");
+            const searchButton = document.getElementById("searchDestBtn");
+            const resultsContainer = document.getElementById("destinationResults");
+
+            const query = queryInput.value.trim();
+
+            if (query.length < 3) {
+                statusElement.innerText =
+                    "Enter at least 3 characters for a destination.";
+                statusElement.style.color = "#b91c1c";
+                return;
+            }
+
+            searchButton.disabled = true;
+            resultsContainer.replaceChildren();
+            document.getElementById("mapSearchResults").replaceChildren();
+            destinationSearchResults = [];
+            clearDestinationSearchMarkers();
+            statusElement.innerText = "Searching real place results in Kenya…";
+            statusElement.style.color = "#2563eb";
+
+            try {
+                const searchParams = new URLSearchParams({ q: query });
+                if (isValidCoordinatePair(currentPickupLat, currentPickupLon)) {
+                    searchParams.set("lat", currentPickupLat);
+                    searchParams.set("lon", currentPickupLon);
+                }
+                const response = await fetch(
+                    `/api/places/search?${searchParams.toString()}`
+                );
+                const data = await response.json();
+                if (!response.ok) {
+                    const error = new Error(data.error || "Place search failed.");
+                    error.code = data.code;
+                    throw error;
+                }
+
+                if (!Array.isArray(data.results) || data.results.length === 0) {
+                    statusElement.innerText =
+                        "No matching destinations found. Try a more specific name or select a point on the map.";
+                    statusElement.style.color = "#dc2626";
+                    switchMode("map");
+                    setMapStatus(
+                        "No matching places were returned. Select a destination point directly on the map.",
+                        true
+                    );
+                    return;
+                }
+
+                destinationSearchResults = data.results;
+                switchMode("map");
+                renderDestinationResults(resultsContainer);
+                renderDestinationResults(
+                    document.getElementById("mapSearchResults")
+                );
+                showDestinationSearchMarkers(data.results);
+                statusElement.innerText =
+                    `${data.results.length} real match${data.results.length === 1 ? "" : "es"} found via ${data.provider || "place search"}. Select the correct destination.`;
+                statusElement.style.color = "#2563eb";
+                setMapStatus(
+                    `${data.results.length} real destination match${data.results.length === 1 ? "" : "es"} shown. Select a result or click its map marker.`
+                );
+            } catch (error) {
+                console.error("Destination search failed:", error);
+                statusElement.innerText = error.message ||
+                    "The place search service is unavailable. Retry or select a point on the map.";
+                statusElement.style.color = "#dc2626";
+            } finally {
+                searchButton.disabled = false;
+            }
+        }
+
+        function renderDestinationResults(container) {
+            container.replaceChildren();
+            destinationSearchResults.forEach((place) => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.className = "destination-result";
+                button.innerText =
+                    `${place.name}\n${place.address}\n${place.latitude.toFixed(6)}, ${place.longitude.toFixed(6)}`;
+                button.addEventListener("click", () => selectDestination(place));
+                container.appendChild(button);
+            });
+        }
+
+        function clearDestinationSearchMarkers() {
+            if (map) {
+                destinationSearchMarkers.forEach((marker) => map.removeLayer(marker));
+            }
+            destinationSearchMarkers = [];
+        }
+
+        function createPopupNode(text) {
+            const node = document.createElement("span");
+            node.textContent = text;
+            return node;
+        }
+
+        function showDestinationSearchMarkers(results) {
+            if (!map) {
+                return;
+            }
+            clearDestinationSearchMarkers();
+            const bounds = [];
+
+            results.forEach((place) => {
+                const marker = L.circleMarker(
+                    [place.latitude, place.longitude],
+                    {
+                        radius: 8,
+                        color: "#c2410c",
+                        fillColor: "#fb923c",
+                        fillOpacity: 0.9,
+                        weight: 2
+                    }
+                );
+                marker.bindPopup(createPopupNode(
+                    `${place.name} — ${place.address}`
+                ));
+                marker.on("click", () => selectDestination(place));
+                marker.addTo(map);
+                destinationSearchMarkers.push(marker);
+                bounds.push([place.latitude, place.longitude]);
+            });
+
+            if (hasUsablePickup()) {
+                bounds.push([currentPickupLat, currentPickupLon]);
+            }
+            if (bounds.length) {
+                map.fitBounds(bounds, { padding: [24, 24], maxZoom: 15 });
+            }
+        }
+
+        function clearSelectedDestination() {
+            routeRequestId += 1;
+            document.getElementById("proceedToMapBtn").disabled = false;
+            selectedDestination = null;
+            currentRoute = null;
+            currentCalculatedDistance = 0;
+            currentCalculatedFare = 0;
+            document.getElementById("dropoffLat").value = "";
+            document.getElementById("dropoffLon").value = "";
+            document.getElementById("destinationResults").replaceChildren();
+            document.getElementById("mapSearchResults").replaceChildren();
+            destinationSearchResults = [];
+            clearDestinationSearchMarkers();
+            document.getElementById("resDistance").innerText = "—";
+            document.getElementById("resFare").innerText = "—";
+            document.getElementById("resDuration").innerText = "—";
+            document.getElementById("resRouteStatus").innerText = "Not calculated";
+            if (destinationMarker && map) {
+                map.removeLayer(destinationMarker);
+                destinationMarker = null;
+            }
+            if (routeLayer && map) {
+                map.removeLayer(routeLayer);
+                routeLayer = null;
+            }
+        }
+
+        function selectDestination(place) {
+            if (!isValidCoordinatePair(place.latitude, place.longitude)) {
+                const status = document.getElementById("dropoffStatus");
+                status.innerText = "The selected place has invalid coordinates.";
+                status.style.color = "#b91c1c";
+                return;
+            }
+
+            selectedDestination = {
+                name: place.name || "Selected destination",
+                address: place.address || place.name || "Selected destination",
+                latitude: Number(place.latitude),
+                longitude: Number(place.longitude)
+            };
+            document.getElementById("dropoffLat").value =
+                selectedDestination.latitude;
+            document.getElementById("dropoffLon").value =
+                selectedDestination.longitude;
+            document.getElementById("dropoffStatus").innerText =
+                `Selected: ${selectedDestination.address} · ${selectedDestination.latitude.toFixed(6)}, ${selectedDestination.longitude.toFixed(6)}`;
+            document.getElementById("dropoffStatus").style.color = "#15803d";
+            document.getElementById("destinationResults").replaceChildren();
+
+            if (map) {
+                if (destinationMarker) {
+                    map.removeLayer(destinationMarker);
+                }
+                destinationMarker = L.circleMarker(
+                    [selectedDestination.latitude, selectedDestination.longitude],
+                    {
+                        radius: 9,
+                        color: "#b91c1c",
+                        fillColor: "#ef4444",
+                        fillOpacity: 0.95,
+                        weight: 2
+                    }
+                ).bindPopup(createPopupNode(selectedDestination.address)).addTo(map);
+                map.setView(
+                    [selectedDestination.latitude, selectedDestination.longitude],
+                    15
+                );
+            }
+
+            if (hasUsablePickup()) {
+                calculateRouteAndFare();
+            } else {
+                switchMode("map");
+                setMapStatus("Destination selected. Detect GPS or choose a manual pickup to request the road route.");
+            }
+        }
+
+        async function calculateRouteAndFare() {
+            if (!selectedDestination) {
+                const status = document.getElementById("dropoffStatus");
+                status.innerText =
+                    "Choose a destination from the search results or select one directly on the map.";
+                status.style.color = "#b91c1c";
+                return;
+            }
+
+            if (!hasUsablePickup()) {
+                if (pickupSource === "live" || pickupSource === "unavailable") {
+                    requestPickupGPS();
+                }
+                const status = document.getElementById("pickupDetails");
+                status.innerText =
+                    "No valid fresh pickup. Retry GPS, or enter coordinates and choose “Use Entered Coordinates”.";
+                status.style.color = "#b91c1c";
+                return;
+            }
+
+            if (mapSelectionMode) {
+                mapSelectionMode = null;
+            }
+            const requestId = ++routeRequestId;
+            const destination = { ...selectedDestination };
+            const pickup = {
+                latitude: Number(currentPickupLat),
+                longitude: Number(currentPickupLon)
+            };
+            routeRequestInProgress = true;
+            currentRoute = null;
+            currentCalculatedDistance = 0;
+            currentCalculatedFare = 0;
+            if (routeLayer && map) {
+                map.removeLayer(routeLayer);
+                routeLayer = null;
+            }
+            document.getElementById("resDistance").innerText = "—";
+            document.getElementById("resFare").innerText = "—";
+            document.getElementById("resDuration").innerText = "—";
+            document.getElementById("resRouteStatus").innerText = "Calculating…";
+            setMapStatus("Requesting a real road route…");
+            switchMode("map");
+            document.getElementById("proceedToMapBtn").disabled = true;
+
+            try {
+                const response = await fetch("/api/trips/calculate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        pickup_lat: pickup.latitude,
+                        pickup_lon: pickup.longitude,
+                        dropoff_lat: destination.latitude,
+                        dropoff_lon: destination.longitude
+                    })
+                });
+
+                const data = await response.json();
+                if (requestId !== routeRequestId) {
+                    return;
+                }
+                if (
+                    calculateHaversine(
+                        pickup.latitude,
+                        pickup.longitude,
+                        currentPickupLat,
+                        currentPickupLon
+                        ) >= 0.003
+                ) {
+                    routeRequestInProgress = false;
+                    calculateRouteAndFare();
+                    return;
+                }
+
+                if (!response.ok) {
+                    const error = new Error(data.error || "Road route failed.");
+                    error.code = data.code;
+                    throw error;
+                }
+
+                currentCalculatedDistance = data.distance_km;
+                currentCalculatedFare = data.estimated_fare_ksh;
+                currentRoute = data;
+                currentFuelPrice = Number(data.current_fuel_index_used) ||
+                    currentFuelPrice;
+                updateRouteSummary();
+                displayRouteOnMap();
+                document.getElementById("resRouteStatus").innerText =
+                    `${data.provider} road route`;
+                setMapStatus("Road route confirmed. Fare shown is an estimate.");
+            } catch (error) {
+                if (requestId !== routeRequestId) {
+                    return;
+                }
+                console.error("Road route request failed:", error);
+                currentRoute = null;
+                document.getElementById("resRouteStatus").innerText = "Route unavailable";
+                setMapStatus(
+                    `${error.message || "Road route could not be calculated"} No road distance or fare estimate is shown. Retry or select another point.`,
+                    true
+                );
+            } finally {
+                if (requestId === routeRequestId) {
+                    routeRequestInProgress = false;
+                    document.getElementById("proceedToMapBtn").disabled = false;
+                }
+            }
+        }
+
+        function updateRouteSummary() {
+            const pickupName = pickupAddress || (
+                pickupSource === "manual" ? "Manual pickup" : "Current GPS position"
+            );
+            document.getElementById("resPickup").innerText =
+                `${pickupName} (${Number(currentPickupLat).toFixed(6)}, ${Number(currentPickupLon).toFixed(6)})`;
+            document.getElementById("resDestination").innerText =
+                `${selectedDestination.address} (${selectedDestination.latitude.toFixed(6)}, ${selectedDestination.longitude.toFixed(6)})`;
+            document.getElementById("resDistance").innerText =
+                `${currentCalculatedDistance.toFixed(3)} km`;
+            document.getElementById("resFare").innerText =
+                `KSh ${Math.round(currentCalculatedFare).toLocaleString()}`;
+            document.getElementById("resDuration").innerText =
+                currentRoute
+                    ? `${currentRoute.duration_minutes} min`
+                    : "—";
+        }
+
+        function displayRouteOnMap() {
+            if (!currentRoute || !currentRoute.geometry) {
+                return;
+            }
+            if (!map) {
+                initMap();
+                if (!map) {
+                    setMapStatus("The road route was calculated, but the interactive map is unavailable.", true);
+                    return;
+                }
+            }
+            if (routeLayer) {
+                map.removeLayer(routeLayer);
+            }
+            routeLayer = L.geoJSON(currentRoute.geometry, {
+                style: { color: "#2563eb", weight: 5, opacity: 0.85 }
+            }).addTo(map);
+            updatePickupMapLayers();
+            if (destinationMarker) {
+                map.removeLayer(destinationMarker);
+            }
+            destinationMarker = L.circleMarker(
+                [selectedDestination.latitude, selectedDestination.longitude],
+                {
+                    radius: 9,
+                    color: "#b91c1c",
+                    fillColor: "#ef4444",
+                    fillOpacity: 0.95,
+                    weight: 2
+                }
+            ).bindPopup(createPopupNode(selectedDestination.address)).addTo(map);
+            switchMode("map");
+            window.setTimeout(() => {
+                map.invalidateSize();
+                map.fitBounds(routeLayer.getBounds(), { padding: [24, 24] });
+            }, 100);
+        }
+
+        function savePendingTrip(distanceKm, recordAfterLogin = false) {
+            if (!selectedDestination) {
+                return false;
+            }
+            sessionStorage.setItem(
+                "pending_trip",
+                JSON.stringify({
+                    pickup_lat: currentPickupLat,
+                    pickup_lon: currentPickupLon,
+                    pickup_was_manual: pickupSource === "manual",
+                    dropoff_lat: selectedDestination.latitude,
+                    dropoff_lon: selectedDestination.longitude,
+                    destination_name: selectedDestination.name,
+                    destination_address: selectedDestination.address,
+                    distance_km: Number(distanceKm),
+                    record_after_login: recordAfterLogin
+                })
+            );
+
+            sessionStorage.setItem(
+                "return_after_login",
+                "/?resumeTrip=1"
+            );
+        }
+
+        function restorePendingRoute() {
+            const params = new URLSearchParams(window.location.search);
+
+            if (params.get("resumeTrip") !== "1") {
+                return;
+            }
+
+            const pendingTrip = sessionStorage.getItem("pending_trip");
+
+            if (!pendingTrip) {
+                return;
+            }
+
+            try {
+                const trip = JSON.parse(pendingTrip);
+
+                if (
+                    !isValidCoordinatePair(trip.dropoff_lat, trip.dropoff_lon) ||
+                    !isValidCoordinatePair(trip.pickup_lat, trip.pickup_lon)
+                ) {
+                    throw new Error("Saved trip coordinates are invalid.");
+                }
+
+                selectedDestination = {
+                    name: trip.destination_name || "Previously selected destination",
+                    address: trip.destination_address || "Previously selected destination",
+                    latitude: Number(trip.dropoff_lat),
+                    longitude: Number(trip.dropoff_lon)
+                };
+                document.getElementById("dropoffLat").value =
+                    selectedDestination.latitude;
+                document.getElementById("dropoffLon").value =
+                    selectedDestination.longitude;
+                document.getElementById("dropoffSearchQuery").value =
+                    selectedDestination.name;
+                document.getElementById("dropoffStatus").innerText =
+                    `Restored: ${selectedDestination.address}`;
+                document.getElementById("dropoffStatus").style.color = "#6b7280";
+                setManualPickup(
+                    trip.pickup_lat,
+                    trip.pickup_lon,
+                    trip.pickup_was_manual
+                        ? "Restored manual pickup"
+                        : "Restored trip pickup (saved coordinates; not a live fix)"
+                );
+                switchMode("map");
+
+                if (trip.record_after_login) {
+                    saveTripToServer(Number(trip.distance_km));
+                } else {
+                    calculateRouteAndFare();
+                }
+                window.history.replaceState({}, document.title, "/");
+            } catch (error) {
+                console.error("Could not restore pending trip:", error);
+                sessionStorage.removeItem("pending_trip");
+            }
+        }
+
+        async function logTrip() {
+            if (!currentRoute || !selectedDestination) {
+                setMapStatus("A confirmed road route is required before recording this trip.", true);
+                return;
+            }
+
+            await saveTripToServer(currentCalculatedDistance);
+        }
+
+        async function saveTripToServer(distanceKm) {
+            if (!selectedDestination) {
+                setMapStatus("Select a destination before recording a trip.", true);
+                return false;
+            }
+            if (!isValidCoordinatePair(currentPickupLat, currentPickupLon)) {
+                setMapStatus("A valid pickup is required to record the trip.", true);
+                return false;
+            }
+
+            try {
+                const response = await fetch("/api/trips/log", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        distance_km: distanceKm,
+                        pickup_lat: currentPickupLat,
+                        pickup_lon: currentPickupLon,
+                        dropoff_lat: selectedDestination.latitude,
+                        dropoff_lon: selectedDestination.longitude
+                    })
+                });
+                const data = await response.json();
+                if (response.status === 401) {
+                    savePendingTrip(distanceKm, true);
+                    alert("Please sign in to save this trip. Your trip details will be restored after login.");
+                    window.location.href = "/login";
+                    return false;
+                }
+                if (!response.ok) {
+                    throw new Error(data.error || "Could not save trip.");
+                }
+                currentCalculatedDistance = Number(data.distance_km);
+                currentCalculatedFare = Number(data.fare_ksh);
+                document.getElementById("resDistance").innerText =
+                    `${currentCalculatedDistance.toFixed(3)} km`;
+                document.getElementById("resFare").innerText =
+                    `KSh ${currentCalculatedFare.toLocaleString()} (final)`;
+                document.getElementById("resRouteStatus").innerText =
+                    "Trip recorded";
+                document.getElementById("meterStatus").innerText =
+                    `Trip recorded. Final distance ${currentCalculatedDistance.toFixed(3)} km; fare KSh ${currentCalculatedFare.toLocaleString()}.`;
+                sessionStorage.removeItem("pending_trip");
+                loadDashboard();
+                return true;
+            } catch (error) {
+                console.error("Trip logging failed:", error);
+                document.getElementById("meterStatus").innerText =
+                    `Trip could not be saved: ${error.message}. Retry when the server is available.`;
+                document.getElementById("meterStatus").style.color = "#b91c1c";
+                return false;
+            }
+        }
+
+        function updateMeterControls() {
+            document.getElementById("startMeterBtn")
+                .classList.toggle("hidden", meterState !== "idle");
+            document.getElementById("pauseMeterBtn")
+                .classList.toggle("hidden", meterState !== "running");
+            document.getElementById("resumeMeterBtn")
+                .classList.toggle("hidden", meterState !== "paused");
+            document.getElementById("stopMeterBtn")
+                .classList.toggle("hidden", !["running", "paused", "finished"].includes(meterState));
+            if (meterState === "finished") {
+                document.getElementById("stopMeterBtn").innerText = "Retry Save";
+            }
+        }
+
+        function updateMeterValues() {
+            currentCalculatedDistance = meterDistanceAccumulated;
+            currentCalculatedFare = Math.round(
+                50 + meterDistanceAccumulated * (currentFuelPrice * 0.2)
+            );
+            document.getElementById("meterDistance").innerText =
+                `${meterDistanceAccumulated.toFixed(3)} km`;
+            document.getElementById("meterFare").innerText =
+                `KSh ${currentCalculatedFare.toLocaleString()} (estimate)`;
+        }
+
+        function startMeterWatch() {
+            if (!navigator.geolocation || !window.isSecureContext) {
+                document.getElementById("meterStatus").innerText =
+                    "Live meter requires browser geolocation on HTTPS or localhost.";
+                document.getElementById("meterStatus").style.color = "#b91c1c";
+                return;
+            }
+
+            meterState = "running";
+            lastMeterPosition = null;
+            meterLastFixAt = null;
+            document.getElementById("meterStatus").innerText =
+                "Acquiring GPS for the active trip…";
+            document.getElementById("meterStatus").style.color = "#d97706";
+            updateMeterControls();
+
+            meterWatchId = navigator.geolocation.watchPosition(
+                (position) => {
+                    const { latitude, longitude, accuracy } = position.coords;
+                    if (!isValidCoordinatePair(latitude, longitude)) {
+                        return;
+                    }
+
+                    applyGpsFix(position, false);
+                    const measuredAt = position.timestamp || Date.now();
+                    const current = {
+                        lat: latitude,
+                        lon: longitude,
+                        accuracy: Number.isFinite(accuracy) ? accuracy : Infinity,
+                        timestamp: measuredAt
+                    };
+
+                    if (current.accuracy > MAX_GPS_ACCURACY_METERS) {
+                        document.getElementById("meterStatus").innerText =
+                            `GPS accuracy is low (±${Math.round(current.accuracy)} m); this fix was excluded from trip distance.`;
+                        document.getElementById("meterStatus").style.color = "#b45309";
+                        return;
+                    }
+
+                    if (lastMeterPosition) {
+                        const elapsedSeconds =
+                            (current.timestamp - lastMeterPosition.timestamp) / 1000;
+                        const deltaKm = calculateHaversine(
+                            lastMeterPosition.lat,
+                            lastMeterPosition.lon,
+                            current.lat,
+                            current.lon
+                        );
+                        const minimumDeltaKm = Math.max(
+                            0.008,
+                            (current.accuracy + lastMeterPosition.accuracy) / 2000
+                        );
+                        const maximumPlausibleKm = Math.max(
+                            0.25,
+                            Math.max(0, elapsedSeconds) * 0.055
+                        );
+
+                        if (elapsedSeconds > 60) {
+                            document.getElementById("meterStatus").innerText =
+                                "GPS updates were interrupted; distance was paused until a fresh fix.";
+                        } else if (
+                            deltaKm >= minimumDeltaKm &&
+                            deltaKm <= maximumPlausibleKm
+                        ) {
+                            meterDistanceAccumulated += deltaKm;
+                        } else if (deltaKm > maximumPlausibleKm) {
+                            document.getElementById("meterStatus").innerText =
+                                "An implausible GPS jump was ignored.";
+                        }
+                    }
+
+                    lastMeterPosition = current;
+                    meterLastFixAt = Date.now();
+                    updateMeterValues();
+                    if (meterState === "running") {
+                        document.getElementById("meterStatus").innerText =
+                            `Trip active · GPS accuracy ±${Math.round(current.accuracy)} m. Fare is an estimate until recorded.`;
+                        document.getElementById("meterStatus").style.color = "#15803d";
+                    }
+                },
+                (error) => {
+                    console.warn("Live meter GPS error:", {
+                        code: error.code,
+                        message: error.message
+                    });
+                    document.getElementById("meterStatus").innerText =
+                        error.code === 1
+                            ? "Location permission was denied. Trip distance is paused; enable location access and resume."
+                            : error.code === 3
+                              ? "GPS update timed out. Trip distance is paused while waiting for another fix."
+                              : "GPS is temporarily unavailable. Trip distance is paused while waiting for another fix.";
+                    document.getElementById("meterStatus").style.color = "#b91c1c";
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 0,
+                    timeout: 15000
+                }
+            );
+        }
+
+        function startLiveMeter() {
+            if (meterState !== "idle") {
+                return;
+            }
+            if (!selectedDestination || !currentRoute) {
+                document.getElementById("meterStatus").innerText =
+                    "Select a destination and wait for its road route before starting the live meter.";
+                document.getElementById("meterStatus").style.color = "#b91c1c";
+                return;
+            }
+            if (
+                pickupSource !== "live" ||
+                !lastGpsFixAt ||
+                Date.now() - lastGpsFixAt > GPS_STALE_AFTER_MS
+            ) {
+                requestPickupGPS();
+                document.getElementById("meterStatus").innerText =
+                    "A fresh GPS fix is required. Allow location access, then press Start Meter again.";
+                document.getElementById("meterStatus").style.color = "#b45309";
+                return;
+            }
+
+            currentPickupLat = Number(document.getElementById("pickupLat").value);
+            currentPickupLon = Number(document.getElementById("pickupLon").value);
+            pickupSource = "live";
+            meterDistanceAccumulated = 0;
+            lastMeterPosition = null;
+            updateMeterValues();
+            startMeterWatch();
+        }
+
+        function pauseLiveMeter() {
+            if (meterState !== "running") {
+                return;
+            }
+            if (meterWatchId !== null) {
+                navigator.geolocation.clearWatch(meterWatchId);
+                meterWatchId = null;
+            }
+            meterState = "paused";
+            lastMeterPosition = null;
+            document.getElementById("meterStatus").innerText =
+                "Trip paused. Resume to continue GPS distance tracking.";
+            document.getElementById("meterStatus").style.color = "#b45309";
+            updateMeterControls();
+        }
+
+        function resumeLiveMeter() {
+            if (meterState !== "paused") {
+                return;
+            }
+            startMeterWatch();
+        }
+
+        async function stopLiveMeter() {
+            if (!["running", "paused", "finished"].includes(meterState)) {
+                return;
+            }
+            if (meterWatchId !== null) {
+                navigator.geolocation.clearWatch(meterWatchId);
+                meterWatchId = null;
+            }
+            if (meterState !== "finished") {
+                meterState = "finished";
+                updateMeterControls();
+            }
+
+            updateMeterValues();
+            document.getElementById("meterStatus").innerText =
+                `Trip ended. ${meterDistanceAccumulated.toFixed(3)} km travelled; final fare will be confirmed by the server.`;
+            document.getElementById("meterStatus").style.color = "#6b7280";
+            const saved = await saveTripToServer(meterDistanceAccumulated);
+            if (saved) {
+                meterState = "idle";
+                meterDistanceAccumulated = 0;
+                lastMeterPosition = null;
+                updateMeterControls();
+                document.getElementById("meterDistance").innerText = "0.000 km";
+            } else {
+                updateMeterControls();
+            }
+        }
+
+        function calculateHaversine(lat1, lon1, lat2, lon2) {
+            const earthRadius = 6371;
+
+            const latitudeDifference =
+                ((lat2 - lat1) * Math.PI) / 180;
+
+            const longitudeDifference =
+                ((lon2 - lon1) * Math.PI) / 180;
+
+            const latitudeOne =
+                (lat1 * Math.PI) / 180;
+
+            const latitudeTwo =
+                (lat2 * Math.PI) / 180;
+
+            const a =
+                Math.sin(latitudeDifference / 2) *
+                    Math.sin(latitudeDifference / 2) +
+                Math.cos(latitudeOne) *
+                    Math.cos(latitudeTwo) *
+                    Math.sin(longitudeDifference / 2) *
+                    Math.sin(longitudeDifference / 2);
+
+            return (
+                earthRadius *
+                2 *
+                Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+            );
+        }
+
+        function switchMode(mode) {
+            const calculatorSection = document.getElementById(
+                "calculatorModeSection"
+            );
+
+            const mapSection = document.getElementById(
+                "mapModeSection"
+            );
+
+            const meterSection = document.getElementById(
+                "meterModeSection"
+            );
+
+            const calculatorButton = document.getElementById(
+                "tabCalcBtn"
+            );
+
+            const mapButton = document.getElementById(
+                "tabMapBtn"
+            );
+
+            const meterButton = document.getElementById(
+                "tabMeterBtn"
+            );
+
+            calculatorSection.classList.add("hidden");
+            mapSection.classList.add("hidden");
+            meterSection.classList.add("hidden");
+
+            calculatorButton.className = "tab-btn";
+            mapButton.className = "tab-btn";
+            meterButton.className = "tab-btn";
+
+            if (mode === "calculator") {
+                calculatorSection.classList.remove("hidden");
+                calculatorButton.className = "tab-btn active";
+            }
+
+            if (mode === "map") {
+                mapSection.classList.remove("hidden");
+                mapButton.className = "tab-btn active";
+
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }, 250);
+            }
+
+            if (mode === "meter") {
+                meterSection.classList.remove("hidden");
+                meterButton.className = "tab-btn active";
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                const response = await fetch("/api/dashboard");
+
+                if (!response.ok) {
+                    throw new Error(`Dashboard request failed (${response.status}).`);
+                }
+
+                const data = await response.json();
+
+                currentFuelPrice =
+                    parseFloat(data.fuel_price_ksh) || 200;
+
+                document.getElementById("portalFuelPrice").innerText =
+                    `KSh ${currentFuelPrice.toLocaleString()}`;
+
+                document.getElementById("portalAvgFare").innerText =
+                    `KSh ${Number(data.avg_fare_ksh || 0).toLocaleString()}`;
+            } catch (error) {
+                console.error("Dashboard fetch error:", error);
+            }
+        }
+
+        function handleLogout() {
+            fetch("/api/auth/logout", { method: "POST" })
+                .catch((error) => {
+                    console.error("Logout request failed:", error);
+                })
+                .finally(() => {
+                    localStorage.removeItem("bodasmart_user");
+                    localStorage.removeItem("user");
+                    localStorage.removeItem("rider");
+                    window.location.href = "/login";
+                });
+        }
+    </script>
+</body>
+</html>

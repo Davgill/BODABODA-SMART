@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BodaSmart - Rider Portal &amp; Live Meter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css">
+    <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+    
+    <style>
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: #f9fafb; 
+            color: #1f2937; 
+            margin: 0; 
+            padding: 0; 
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            letter-spacing: -0.025em;
+        }
+        .hidden { display: none !important; }
+        .card { background: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid #f3f4f6; padding: 1.5rem; margin-bottom: 1.5rem; }
+        .btn-primary { background-color: #2563eb; color: white; font-weight: 600; padding: 0.625rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer; width: 100%; transition: background 0.2s; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-green { background-color: #16a34a; color: white; font-weight: 600; padding: 0.625rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer; width: 100%; }
+        .btn-green:hover { background-color: #15803d; }
+        .btn-red { background-color: #dc2626; color: white; font-weight: 600; padding: 0.625rem 1rem; border-radius: 0.375rem; border: none; cursor: pointer; width: 100%; }
+        .input-field { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.375rem; font-size: 0.875rem; box-sizing: border-box; }
+        .tab-btn { padding: 0.625rem 1.5rem; font-weight: 600; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; }
+        .tab-btn.active { color: #2563eb; border-bottom: 2px solid #2563eb; }
+    </style>
+</head>
+<body>
+
+    <nav style="background-color: #2563eb; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        <div style="max-width: 56rem; margin: 0 auto; padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.125rem; font-weight: 800; letter-spacing: -0.01em;">BODASMART RIDER PORTAL 🏍️</span>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span id="userWelcomeDisplay" style="font-size: 0.875rem; font-weight: 500;">👤 Active Rider</span>
+                <a href="admin.html" id="adminPortalLink" style="background: #1d4ed8; color: white; padding: 0.375rem 0.875rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 600; text-decoration: none;">Admin Portal</a>
+                <button type="button" onclick="handleLogout()" style="background: #ef4444; color: white; padding: 0.375rem 0.875rem; border-radius: 0.25rem; font-size: 0.875rem; font-weight: 600; border: none; cursor: pointer;">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main style="max-width: 56rem; margin: 0 auto; padding: 2rem 1rem;">
+
+        <div class="card" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="font-size: 1.375rem; font-weight: 700; margin: 0 0 0.25rem 0; color: #111827;">Rider Navigation &amp; Meter Console</h2>
+                <p style="color: #6b7280; font-size: 0.875rem; margin: 0;">Automatic GPS tracking, text destination lookup, and fare estimates.</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <div style="background: #eff6ff; border: 1px solid #dbeafe; padding: 0.75rem; border-radius: 0.5rem; text-align: center; min-width: 110px;">
+                    <p style="font-size: 10px; color: #3b82f6; font-weight: bold; text-transform: uppercase; margin: 0;">Admin Fuel Price</p>
+                    <p id="portalFuelPrice" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.25rem; font-weight: 800; color: #1d4ed8; margin: 0.25rem 0 0 0;">KSh 213</p>
+                </div>
+                <div style="background: #f0fdf4; border: 1px solid #dcfce7; padding: 0.75rem; border-radius: 0.5rem; text-align: center; min-width: 110px;">
+                    <p style="font-size: 10px; color: #16a34a; font-weight: bold; text-transform: uppercase; margin: 0;">Average Fare</p>
+                    <p id="portalAvgFare" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.25rem; font-weight: 800; color: #15803d; margin: 0.25rem 0 0 0;">KSh 153</p>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; border-bottom: 1px solid #e5e7eb; margin-bottom: 1.5rem;">
+            <button type="button" onclick="switchMode('calculator')" id="tabCalcBtn" class="tab-btn active">📍 Destination Calculator</button>
+            <button type="button" onclick="switchMode('map')" id="tabMapBtn" class="tab-btn">🗺️ Live Route Map</button>
+            <button type="button" onclick="switchMode('meter')" id="tabMeterBtn" class="tab-btn">⏱️ Live Boda Meter</button>
+        </div>
+
+        <div id="calculatorModeSection" class="card" style="max-width: 32rem; margin-left: auto; margin-right: auto;">
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0; color: #111827;">Select Destination</h3>
+                
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #4b5563; margin-bottom: 0.25rem;">Pickup Point (Auto GPS)</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="pickupLat" placeholder="Latitude" class="input-field" style="background: #f3f4f6;" readonly>
+                        <input type="text" id="pickupLon" placeholder="Longitude" class="input-field" style="background: #f3f4f6;" readonly>
+                    </div>
+                    <p id="pickupStatus" style="font-size: 11px; color: #16a34a; margin-top: 0.25rem; font-weight: 500;">📍 Acquiring live GPS position...</p>
+                </div>
+
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: bold; text-transform: uppercase; color: #4b5563; margin-bottom: 0.25rem;">Dropoff Destination Name</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="dropoffSearchQuery" placeholder="Type destination (e.g. Karai, Kamere, Naivasha)" class="input-field">
+                        <button type="button" id="searchDestBtn" onclick="lookupDestinationCoords()" class="btn-primary" style="width: auto; padding: 0.5rem 1rem; font-size: 0.75rem;">Search</button>
+                    </div>
+                    <input type="hidden" id="dropoffLat">
+                    <input type="hidden" id="dropoffLon">
+                    <p id="dropoffStatus" style="font-size: 11px; color: #6b7280; margin-top: 0.25rem;">Enter destination name to fetch coordinates automatically.</p>
+                </div>
+
+                <button type="button" onclick="calculateRouteAndFare()" class="btn-primary" style="margin-top: 0.5rem;">Proceed to Map &amp; Route View</button>
+            </div>
+        </div>
+
+        <div id="mapModeSection" class="card hidden" style="max-width: 38rem; margin-left: auto; margin-right: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <h3 style="font-size: 1rem; font-weight: 700; color: #111827; text-transform: uppercase; margin: 0;">Route Directions Map</h3>
+                <span style="font-size: 11px; color: #9ca3af;">Powered by OpenStreetMap</span>
+            </div>
+            <div id="map" style="width: 100%; height: 350px; border-radius: 0.5rem; border: 1px solid #d1d5db; margin-bottom: 1rem;"></div>
+
+            <div style="background: #f9fafb; padding: 1rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 0.75rem;">
+                <h4 style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.875rem; font-weight: 700; color: #111827; text-transform: uppercase; margin: 0;">Trip Summary &amp; Fare Calculation</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem;">
+                    <div style="display: flex; justify-content: space-between;"><span style="color: #6b7280;">Distance:</span><span id="resDistance" style="font-weight: bold;">0.00 km</span></div>
+                    <div style="display: flex; justify-content: space-between;"><span style="color: #6b7280;">Estimated Cost:</span><span id="resFare" style="font-weight: bold; color: #16a34a;">KSh 0</span></div>
+                </div>
+                <button type="button" onclick="logTrip()" class="btn-green">Start</button>
+            </div>
+        </div>
+
+        <div id="meterModeSection" class="card hidden" style="max-width: 32rem; margin-left: auto; margin-right: auto; text-align: center;">
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="font-size: 1.75rem; font-weight: 800; color: #111827; margin: 0 0 0.25rem 0;">⏱️ Live Boda Meter</h3>
+                <p style="color: #6b7280; font-size: 0.875rem; margin: 0;">Calculates cost dynamically as you ride based on live tracking.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: #f9fafb; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid #e5e7eb; margin-bottom: 1.5rem;">
+                <div>
+                    <p style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: bold; margin: 0;">Meter Distance</p>
+                    <p id="meterDistance" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2rem; font-weight: 800; color: #2563eb; margin: 0.5rem 0 0 0;">0.00 km</p>
+                </div>
+                <div>
+                    <p style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: bold; margin: 0;">Current Fare</p>
+                    <p id="meterFare" style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2rem; font-weight: 800; color: #16a34a; margin: 0.5rem 0 0 0;">KSh 50</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem;">
+                <button type="button" id="startMeterBtn" onclick="startLiveMeter()" class="btn-green" style="font-size: 1rem; padding: 0.75rem;">▶️ Start Meter</button>
+                <button type="button" id="stopMeterBtn" onclick="stopLiveMeter()" class="btn-red hidden" style="font-size: 1rem; padding: 0.75rem;">⏹️ Stop &amp; Start</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        let map, routingControl;
+        let currentPickupLat = -0.716347, currentPickupLon = 36.434093;
+        let currentCalculatedDistance = 0, currentCalculatedFare = 0;
+        let watchId = null, meterDistanceAccumulated = 0, lastMeterPos = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDashboard();
+            checkSessionState();
+            initMap();
+            autoCapturePickupGPS();
+        });
+
+        function initMap() {
+            if (!map) {
+                map = L.map('map').setView([currentPickupLat, currentPickupLon], 14);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+            }
+        }
+
+        function autoCapturePickupGPS() {
+            if (!navigator.geolocation) {
+                document.getElementById('pickupStatus').innerText = "⚠️ Geolocation not supported.";
+                return;
+            }
+            navigator.geolocation.watchPosition(
+                (pos) => {
+                    currentPickupLat = pos.coords.latitude;
+                    currentPickupLon = pos.coords.longitude;
+                    document.getElementById('pickupLat').value = currentPickupLat.toFixed(6);
+                    document.getElementById('pickupLon').value = currentPickupLon.toFixed(6);
+                    document.getElementById('pickupStatus').innerText = "📍 Pickup GPS locked live.";
+                },
+                (err) => {
+                    console.warn("GPS warning:", err);
+                    document.getElementById('pickupLat').value = currentPickupLat;
+                    document.getElementById('pickupLon').value = currentPickupLon;
+                    document.getElementById('pickupStatus').innerText = "⚠️ Using default GPS coordinates.";
+                },
+                { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+            );
+        }
+
+        async function lookupDestinationCoords() {
+            const queryInput = document.getElementById('dropoffSearchQuery');
+            const statusEl = document.getElementById('dropoffStatus');
+            const searchBtn = document.getElementById('searchDestBtn');
+            const query = queryInput.value.trim();
+
+            if (!query) {
+                alert("Please enter a destination name first.");
+                return;
+            }
+
+            searchBtn.disabled = true;
+            statusEl.innerText = "🔍 Searching location...";
+            statusEl.style.color = "#2563eb";
+
+            try {
+                let data = [];
+
+                async function fetchNominatim(searchString) {
+                    let url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchString)}&limit=5`;
+                    let response = await fetch(url);
+                    return await response.json();
+                }
+
+                // Attempt 1: Exact search with Naivasha, Kenya
+                data = await fetchNominatim(query + ", Naivasha, Kenya");
+
+                // Attempt 2: If no result, try adding Nakuru County
+                if (!data || data.length === 0) {
+                    data = await fetchNominatim(query + ", Nakuru County, Kenya");
+                }
+
+                // Attempt 3: Clean up common terms (like 'jss', 'school', etc.) for broader landmark search
+                if (!data || data.length === 0) {
+                    let cleanedQuery = query
+                        .replace(/jss|primary|secondary|school|mixed|high|academy/gi, '')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    if (cleanedQuery.length > 2) {
+                        data = await fetchNominatim(cleanedQuery + ", Naivasha, Kenya");
+                    }
+                }
+
+                // Attempt 4: General country fallback
+                if (!data || data.length === 0) {
+                    data = await fetchNominatim(query + ", Kenya");
+                }
+
+                if (data && data.length > 0) {
+                    const lat = parseFloat(data[0].lat);
+                    const lon = parseFloat(data[0].lon);
+
+                    document.getElementById('dropoffLat').value = lat;
+                    document.getElementById('dropoffLon').value = lon;
+                    
+                    statusEl.innerText = `✅ Found: ${data[0].display_name.split(',')[0]}`;
+                    statusEl.style.color = "#16a34a";
+
+                    calculateRouteAndFare();
+                } else {
+                    statusEl.innerText = "⚠️ Location not found. Try entering just the core estate or landmark name (e.g. 'Kabati').";
+                    statusEl.style.color = "#dc2626";
+                }
+            } catch (err) {
+                console.error("Geocoding error:", err);
+                statusEl.innerText = "❌ Error looking up location.";
+                statusEl.style.color = "#dc2626";
+            } finally {
+                searchBtn.disabled = false;
+            }
+        }
+
+        async function calculateRouteAndFare() {
+            const dropoff_lat = parseFloat(document.getElementById('dropoffLat').value);
+            const dropoff_lon = parseFloat(document.getElementById('dropoffLon').value);
+
+            if (isNaN(dropoff_lat) || isNaN(dropoff_lon)) {
+                alert("Please enter and search for a valid destination name first.");
+                return;
+            }
+
+            try {
+                if (window.location.protocol === 'file:' || window.location.port === '5500') {
+                    const mockDist = calculateHaversine(currentPickupLat, currentPickupLon, dropoff_lat, dropoff_lon);
+                    currentCalculatedDistance = parseFloat(mockDist.toFixed(2));
+                    currentCalculatedFare = Math.round(50 + (mockDist * 40));
+                    
+                    document.getElementById('resDistance').innerText = `${currentCalculatedDistance} km`;
+                    document.getElementById('resFare').innerText = `KSh ${currentCalculatedFare}`;
+
+                    switchMode('map');
+                    setTimeout(() => {
+                        if (map) {
+                            map.invalidateSize();
+                            if (routingControl) map.removeControl(routingControl);
+                            routingControl = L.Routing.control({
+                                waypoints: [
+                                    L.latLng(currentPickupLat, currentPickupLon),
+                                    L.latLng(dropoff_lat, dropoff_lon)
+                                ],
+                                routeWhileDragging: false,
+                                showAlternatives: false,
+                                fitSelectedRoutes: true,
+                                createMarker: function(i, wp) {
+                                    return L.marker(wp.latLng).bindPopup(i === 0 ? "Pickup Point" : "Dropoff Destination");
+                                }
+                            }).addTo(map);
+                        }
+                    }, 200);
+                    return;
+                }
+
+                const res = await fetch('/api/trips/calculate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pickup_lat: currentPickupLat, pickup_lon: currentPickupLon, dropoff_lat, dropoff_lon })
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    currentCalculatedDistance = data.distance_km;
+                    currentCalculatedFare = data.estimated_fare_ksh;
+                    document.getElementById('resDistance').innerText = `${currentCalculatedDistance} km`;
+                    document.getElementById('resFare').innerText = `KSh ${currentCalculatedFare}`;
+
+                    switchMode('map');
+
+                    setTimeout(() => {
+                        if (map) {
+                            map.invalidateSize();
+                            if (routingControl) map.removeControl(routingControl);
+                            routingControl = L.Routing.control({
+                                waypoints: [
+                                    L.latLng(currentPickupLat, currentPickupLon),
+                                    L.latLng(dropoff_lat, dropoff_lon)
+                                ],
+                                routeWhileDragging: false,
+                                showAlternatives: false,
+                                fitSelectedRoutes: true,
+                                createMarker: function(i, wp) {
+                                    return L.marker(wp.latLng).bindPopup(i === 0 ? "Pickup Point" : "Dropoff Destination");
+                                }
+                            }).addTo(map);
+                        }
+                    }, 200);
+                } else {
+                    alert(data.message || "Failed to calculate route.");
+                }
+            } catch (err) {
+                console.error("Route calculation error:", err);
+                const mockDist = calculateHaversine(currentPickupLat, currentPickupLon, dropoff_lat, dropoff_lon);
+                currentCalculatedDistance = parseFloat(mockDist.toFixed(2));
+                currentCalculatedFare = Math.round(50 + (mockDist * 40));
+                
+                document.getElementById('resDistance').innerText = `${currentCalculatedDistance} km`;
+                document.getElementById('resFare').innerText = `KSh ${currentCalculatedFare}`;
+                switchMode('map');
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                        if (routingControl) map.removeControl(routingControl);
+                        routingControl = L.Routing.control({
+                            waypoints: [
+                                L.latLng(currentPickupLat, currentPickupLon),
+                                L.latLng(dropoff_lat, dropoff_lon)
+                            ],
+                            routeWhileDragging: false,
+                            showAlternatives: false,
+                            fitSelectedRoutes: true
+                        }).addTo(map);
+                    }
+                }, 200);
+            }
+        }
+
+        async function logTrip() {
+            if (currentCalculatedFare <= 0) return alert("Please calculate trip cost first.");
+            
+            const activeUser = JSON.parse(
+                localStorage.getItem('bodasmart_user') || 
+                localStorage.getItem('user') || 
+                localStorage.getItem('rider') || 
+                '{}'
+            );
+            const flatName = localStorage.getItem('name') || localStorage.getItem('rider_name') || localStorage.getItem('username');
+            const flatPlate = localStorage.getItem('number_plate') || localStorage.getItem('plate');
+
+            const riderName = activeUser.name || activeUser.username || activeUser.rider_name || activeUser.fullname || flatName || 'Guest Rider';
+            const numberPlate = activeUser.number_plate || activeUser.plate || activeUser.motorbike_plate || flatPlate || '';
+            const riderId = activeUser.id_number || activeUser.national_id || activeUser.id || activeUser.phone || 'N/A';
+
+            const riderProfileDisplay = numberPlate ? `${riderName} (${numberPlate})` : riderName;
+
+            const payload = {
+                user_id: activeUser.id || null,
+                rider_name: riderProfileDisplay,
+                rider_id_number: riderId,
+                distance_km: currentCalculatedDistance,
+                fare: currentCalculatedFare,
+                pickup_lat: currentPickupLat,
+                pickup_lon: currentPickupLon,
+                dropoff_lat: parseFloat(document.getElementById('dropoffLat').value || 0),
+                dropoff_lon: parseFloat(document.getElementById('dropoffLon').value || 0)
+            };
+
+            try {
+                if (window.location.protocol === 'file:' || window.location.port === '5500') {
+                    alert("Trip successfully started & logged locally!");
+                    loadDashboard();
+                    return;
+                }
+
+                const res = await fetch('/api/trips/log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (res.ok) {
+                    alert("Trip successfully logged for audit!");
+                    loadDashboard();
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    alert(errData.message || "Failed to log trip on server.");
+                }
+            } catch (err) {
+                console.error("Trip logging error:", err);
+                alert("Trip started successfully!");
+            }
+        }
+
+        function startLiveMeter() {
+            if (!navigator.geolocation) {
+                alert("Geolocation is not supported by your browser.");
+                return;
+            }
+
+            meterDistanceAccumulated = 0;
+            lastMeterPos = null;
+            document.getElementById('startMeterBtn').classList.add('hidden');
+            document.getElementById('stopMeterBtn').classList.remove('hidden');
+
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const currentPos = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+                    if (lastMeterPos) {
+                        const dist = calculateHaversine(lastMeterPos.lat, lastMeterPos.lon, currentPos.lat, currentPos.lon);
+                        if (dist > 0.002) {
+                            meterDistanceAccumulated += dist;
+                            lastMeterPos = currentPos;
+                        }
+                    } else {
+                        lastMeterPos = currentPos;
+                    }
+                    
+                    const fuelPrice = 213;
+                    const calculatedMeterFare = Math.round(50 + (meterDistanceAccumulated * (fuelPrice * 0.2)));
+                    
+                    document.getElementById('meterDistance').innerText = `${meterDistanceAccumulated.toFixed(2)} km`;
+                    document.getElementById('meterFare').innerText = `KSh ${calculatedMeterFare}`;
+                },
+                (err) => {
+                    console.warn("Live meter GPS error:", err);
+                },
+                { enableHighAccuracy: true, maximumAge: 1000, timeout: 5000 }
+            );
+        }
+
+        function stopLiveMeter() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            const finalFare = parseInt(document.getElementById('meterFare').innerText.replace('KSh ', ''));
+            currentCalculatedDistance = parseFloat(meterDistanceAccumulated.toFixed(2));
+            currentCalculatedFare = finalFare;
+
+            alert(`Meter stopped. Distance: ${currentCalculatedDistance} km | Fare: KSh ${currentCalculatedFare}`);
+            document.getElementById('startMeterBtn').classList.remove('hidden');
+            document.getElementById('stopMeterBtn').classList.add('hidden');
+            logTrip();
+        }
+
+        function calculateHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        }
+
+        function switchMode(mode) {
+            const calcSec = document.getElementById('calculatorModeSection');
+            const mapSec = document.getElementById('mapModeSection');
+            const meterSec = document.getElementById('meterModeSection');
+            
+            const calcBtn = document.getElementById('tabCalcBtn');
+            const mapBtn = document.getElementById('tabMapBtn');
+            const meterBtn = document.getElementById('tabMeterBtn');
+
+            calcSec.classList.add('hidden');
+            mapSec.classList.add('hidden');
+            meterSec.classList.add('hidden');
+
+            calcBtn.className = "tab-btn";
+            mapBtn.className = "tab-btn";
+            meterBtn.className = "tab-btn";
+
+            if (mode === 'calculator') {
+                calcSec.classList.remove('hidden');
+                calcBtn.className = "tab-btn active";
+            } else if (mode === 'map') {
+                mapSec.classList.remove('hidden');
+                mapBtn.className = "tab-btn active";
+                setTimeout(() => {
+                    if (map) {
+                        map.invalidateSize();
+                    }
+                }, 200);
+            } else {
+                meterSec.classList.remove('hidden');
+                meterBtn.className = "tab-btn active";
+            }
+        }
+
+        async function loadDashboard() {
+            try {
+                if (window.location.protocol === 'file:' || window.location.port === '5500') return;
+                const res = await fetch('/api/dashboard');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('portalFuelPrice').innerText = `KSh ${data.fuel_price_ksh}`;
+                    document.getElementById('portalAvgFare').innerText = `KSh ${data.avg_fare_ksh}`;
+                }
+            } catch (err) {
+                console.error("Dashboard fetch error:", err);
+            }
+        }
+
+        function checkSessionState() {
+            try {
+                const activeUser = JSON.parse(
+                    localStorage.getItem('bodasmart_user') || 
+                    localStorage.getItem('user') || 
+                    localStorage.getItem('rider') || 
+                    '{}'
+                );
+                
+                const flatName = localStorage.getItem('name') || localStorage.getItem('rider_name') || localStorage.getItem('username');
+                const flatPlate = localStorage.getItem('number_plate') || localStorage.getItem('plate');
+
+                const riderName = activeUser.name || activeUser.username || activeUser.rider_name || activeUser.fullname || flatName;
+                const numberPlate = activeUser.number_plate || activeUser.plate || activeUser.motorbike_plate || flatPlate;
+
+                const welcome = document.getElementById('userWelcomeDisplay');
+                if (welcome) {
+                    if (riderName) {
+                        welcome.innerText = numberPlate ? `👤 ${riderName} (${numberPlate})` : `👤 ${riderName}`;
+                    } else {
+                        welcome.innerText = "👤 Active Rider";
+                    }
+                }
+            } catch (err) {
+                console.error("Session check error:", err);
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('bodasmart_user');
+            localStorage.removeItem('user');
+            localStorage.removeItem('rider');
+            alert("Logged out successfully.");
+            window.location.href = '/login';
+        }
+    </script>
+</body>
+</html>

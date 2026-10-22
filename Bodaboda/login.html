@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BodaSmart Portal - Login &amp; Register</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col justify-between">
+
+    <!-- Top Navigation Bar -->
+    <header class="bg-blue-600 text-white shadow-md py-4 px-6 flex justify-between items-center">
+        <h1 class="text-xl font-bold">BodaSmart Portal</h1>
+        <a href="/" class="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-1.5 rounded transition">Back to Home</a>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow container mx-auto px-4 py-8 flex justify-center items-center">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md relative">
+            <!-- Tabs Header -->
+            <div class="flex border-b mb-6">
+                <button type="button" id="loginTabBtn" onclick="switchTab('login')" class="w-1/2 pb-3 font-bold text-center border-b-2 border-blue-600 text-blue-600 transition cursor-pointer">Login</button>
+                <button type="button" id="registerTabBtn" onclick="switchTab('register')" class="w-1/2 pb-3 font-bold text-center border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition cursor-pointer">Register</button>
+            </div>
+
+            <!-- Alert Box for Messages -->
+            <div id="alertBox" class="hidden mb-4 p-3 rounded text-sm font-medium"></div>
+
+            <!-- LOGIN FORM -->
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
+                    <input type="email" id="loginEmail" required class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="rider@bodasmart.com">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-2">Password</label>
+                    <div class="relative">
+                        <input type="password" id="loginPassword" required autocomplete="current-password" class="w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••">
+                        <button type="button" aria-label="Toggle password visibility" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <svg id="loginEyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" onclick="openForgotModal()" class="text-xs text-blue-600 hover:underline font-medium cursor-pointer">Forgot password?</button>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition cursor-pointer">Sign In to Portal</button>
+            </form>
+
+            <!-- REGISTRATION FORM -->
+            <form id="registerForm" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1">Full Name</label>
+                    <input type="text" id="regName" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="David Ondieki">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1">National ID Number</label>
+                    <input type="text" id="regIdNumber" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="12345678">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-1">Bike Model</label>
+                        <input type="text" id="regBikeModel" class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Boxer 150">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 text-sm font-bold mb-1">Number Plate</label>
+                        <input type="text" id="regNumberPlate" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="KMDA 000Z">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1">Phone Number</label>
+                    <input type="text" id="regPhone" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="0712345678">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1">Email Address</label>
+                    <input type="email" id="regEmail" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="rider@bodasmart.com">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-bold mb-1">Password</label>
+                    <div class="relative">
+                        <input type="password" id="regPassword" required autocomplete="new-password" oninput="checkPasswordStrength(this.value)" class="w-full px-3 py-2 pr-10 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="••••••••">
+                        <button type="button" aria-label="Toggle password visibility" onclick="togglePasswordVisibility('regPassword', 'regEyeIcon')" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none">
+                            <svg id="regEyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- Password Strength Meter Feedback UI -->
+                    <div class="mt-1 flex items-center justify-between">
+                        <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden mr-2">
+                            <div id="strengthBar" class="h-full w-0 transition-all duration-300"></div>
+                        </div>
+                        <span id="strengthText" class="text-xs font-semibold text-gray-400 whitespace-nowrap">Strength</span>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-700 transition cursor-pointer">Complete Registration</button>
+            </form>
+
+        </div>
+    </main>
+
+    <!-- Forgot Password Modal Popup -->
+    <div id="forgotModal" class="fixed inset-0 bg-black bg-opacity-50 justify-center items-center hidden z-50 px-4">
+        <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-sm">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Reset Password via Gmail</h3>
+            <p class="text-xs text-gray-600 mb-4">Enter your account email address below. We'll send a secure password reset verification link to your Gmail inbox.</p>
+            <div id="forgotAlert" class="hidden mb-3 p-2 rounded text-xs font-medium"></div>
+
+            <form id="forgotForm" onsubmit="handleForgotPassword(event)" class="space-y-3">
+                <div>
+                    <label class="block text-gray-700 text-xs font-bold mb-1">Your Registered Email</label>
+                    <input type="email" id="forgotEmail" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="rider@bodasmart.com">
+                </div>
+                <div class="flex space-x-2 pt-2">
+                    <button type="button" onclick="closeForgotModal()" class="w-1/2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 rounded-lg text-sm transition cursor-pointer">Cancel</button>
+                    <button type="submit" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-lg text-sm transition cursor-pointer">Send Link</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t py-4 text-center text-xs text-gray-500">
+        &copy; 2026 BodaSmart Kenya. All rights reserved.
+    </footer>
+
+    <!-- Script Handling Logic -->
+    <script>
+        function switchTab(tab) {
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const loginTabBtn = document.getElementById('loginTabBtn');
+            const registerTabBtn = document.getElementById('registerTabBtn');
+            const alertBox = document.getElementById('alertBox');
+
+            alertBox.classList.add('hidden');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                loginTabBtn.className = "w-1/2 pb-3 font-bold text-center border-b-2 border-blue-600 text-blue-600 transition cursor-pointer";
+                registerTabBtn.className = "w-1/2 pb-3 font-bold text-center border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition cursor-pointer";
+            } else {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                registerTabBtn.className = "w-1/2 pb-3 font-bold text-center border-b-2 border-blue-600 text-blue-600 transition cursor-pointer";
+                loginTabBtn.className = "w-1/2 pb-3 font-bold text-center border-b-2 border-transparent text-gray-400 hover:text-gray-600 transition cursor-pointer";
+            }
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const inputField = document.getElementById(inputId);
+            const eyeIcon = document.getElementById(iconId);
+
+            if (inputField.type === 'password') {
+                inputField.type = 'text';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                `;
+            } else {
+                inputField.type = 'password';
+                eyeIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                `;
+            }
+        }
+
+        function showAlert(message, isError = true) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.innerText = message;
+            alertBox.className = isError 
+                ? "mb-4 p-3 rounded text-sm font-medium bg-red-100 text-red-700 border border-red-200" 
+                : "mb-4 p-3 rounded text-sm font-medium bg-green-100 text-green-700 border border-green-200";
+        }
+
+        function checkPasswordStrength(password) {
+            const strengthBar = document.getElementById('strengthBar');
+            const strengthText = document.getElementById('strengthText');
+
+            if (!password) {
+                strengthBar.style.width = '0%';
+                strengthBar.className = 'h-full w-0 transition-all duration-300';
+                strengthText.innerText = 'Strength';
+                strengthText.className = 'text-xs font-semibold text-gray-400 whitespace-nowrap';
+                return;
+            }
+
+            let score = 0;
+            if (password.length >= 6) score++;
+            if (password.length >= 10) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            if (score <= 2) {
+                strengthBar.style.width = '33%';
+                strengthBar.className = 'h-full transition-all duration-300 bg-red-500';
+                strengthText.innerText = 'Weak';
+                strengthText.className = 'text-xs font-semibold text-red-500 whitespace-nowrap';
+            } else if (score <= 4) {
+                strengthBar.style.width = '66%';
+                strengthBar.className = 'h-full transition-all duration-300 bg-yellow-500';
+                strengthText.innerText = 'Medium';
+                strengthText.className = 'text-xs font-semibold text-yellow-600 whitespace-nowrap';
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.className = 'h-full transition-all duration-300 bg-green-500';
+                strengthText.innerText = 'Strong';
+                strengthText.className = 'text-xs font-semibold text-green-600 whitespace-nowrap';
+            }
+        }
+
+        function openForgotModal() {
+            document.getElementById('forgotModal').classList.remove('hidden');
+            document.getElementById('forgotAlert').classList.add('hidden');
+            document.getElementById('forgotForm').reset();
+        }
+
+        function closeForgotModal() {
+            document.getElementById('forgotModal').classList.add('hidden');
+        }
+
+        async function handleForgotPassword(e) {
+            e.preventDefault();
+            const email = document.getElementById('forgotEmail').value;
+            const forgotAlert = document.getElementById('forgotAlert');
+
+            forgotAlert.innerText = "Sending reset link to Gmail...";
+            forgotAlert.className = "mb-3 p-2 rounded text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200";
+            forgotAlert.classList.remove('hidden');
+
+            setTimeout(() => {
+                forgotAlert.innerText = `Success! A password recovery link has been dispatched to ${email}. Check your Gmail inbox.`;
+                forgotAlert.className = "mb-3 p-2 rounded text-xs font-medium bg-green-100 text-green-700 border border-green-200";
+                setTimeout(() => {
+                    closeForgotModal();
+                }, 3000);
+            }, 1200);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('bodaUser_name', data.name);
+                    localStorage.setItem('bodaUser_email', data.email);
+                    localStorage.setItem('bodaUser_idNumber', data.id_number || 'ID-Pending');
+                    window.location.href = '/';
+                } else {
+                    showAlert(data.error || "Invalid credentials.");
+                }
+            } catch (err) {
+                showAlert("Network connection error to the server.");
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                name: document.getElementById('regName').value,
+                id_number: document.getElementById('regIdNumber').value,
+                bike_model: document.getElementById('regBikeModel').value,
+                number_plate: document.getElementById('regNumberPlate').value,
+                phone_number: document.getElementById('regPhone').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value
+            };
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showAlert("Registration successful! Switching to login...", false);
+                    setTimeout(() => {
+                        switchTab('login');
+                        document.getElementById('loginEmail').value = payload.email;
+                    }, 1500);
+                } else {
+                    showAlert(data.error || "Registration failed.");
+                }
+            } catch (err) {
+                showAlert("Network connection error to the server.");
+            }
+        });
+    </script>
+</body>
+</html>

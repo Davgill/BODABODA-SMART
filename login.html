@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BodaSmart Portal - Login & Register</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/bodasmart-theme.css">
+</head>
+
+<body class="login-app flex min-h-screen flex-col bg-gray-100">
+
+    <header class="flex items-center justify-between px-6 py-4 text-white shadow-md">
+        <img
+            class="brand-logo"
+            src="/bodasmart-brand.png"
+            alt="BodaSmart — Ride smart, go further"
+        >
+
+        <a
+            href="/"
+            class="rounded bg-blue-700 px-3 py-2 text-sm font-semibold transition hover:bg-blue-800"
+        >
+            Back to Home
+        </a>
+    </header>
+
+    <main class="flex flex-1 items-center justify-center px-4 py-8">
+        <div class="relative w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
+
+            <div class="mb-6 flex border-b">
+                <button
+                    type="button"
+                    id="loginTabBtn"
+                    onclick="switchTab('login')"
+                    class="w-1/2 border-b-2 border-blue-600 pb-3 text-center font-bold text-blue-600"
+                >
+                    Login
+                </button>
+
+                <button
+                    type="button"
+                    id="registerTabBtn"
+                    onclick="switchTab('register')"
+                    class="w-1/2 border-b-2 border-transparent pb-3 text-center font-bold text-gray-400 hover:text-gray-700"
+                >
+                    Register
+                </button>
+            </div>
+
+            <div
+                id="alertBox"
+                class="mb-4 hidden rounded border p-3 text-sm font-medium"
+            ></div>
+
+            <!-- Login form -->
+            <form
+                id="loginForm"
+                class="space-y-4"
+            >
+                <div>
+                    <label
+                        for="loginEmail"
+                        class="mb-2 block text-sm font-bold text-gray-700"
+                    >
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="loginEmail"
+                        autocomplete="email"
+                        required
+                        class="w-full rounded-lg border px-3 py-2 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        placeholder="rider@bodasmart.com"
+                    >
+                </div>
+
+                <div>
+                    <label
+                        for="loginPassword"
+                        class="mb-2 block text-sm font-bold text-gray-700"
+                    >
+                        Password
+                    </label>
+
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="loginPassword"
+                            autocomplete="current-password"
+                            required
+                            class="w-full rounded-lg border px-3 py-2 pr-12 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            placeholder="Enter your password"
+                        >
+
+                        <button
+                            type="button"
+                            onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')"
+                            aria-label="Show or hide password"
+                            class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-800"
+                        >
+                            <svg
+                                id="loginEyeIcon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button
+                        type="button"
+                        onclick="openForgotModal()"
+                        class="text-xs font-semibold text-blue-600 hover:underline"
+                    >
+                        Forgot password?
+                    </button>
+                </div>
+
+                <button
+                    type="submit"
+                    id="loginSubmitButton"
+                    class="w-full rounded-lg bg-blue-600 px-4 py-2 font-bold text-white transition hover:bg-blue-700"
+                >
+                    Sign In to Portal
+                </button>
+            </form>
+
+            <!-- Registration form -->
+            <form
+                id="registerForm"
+                class="hidden space-y-4"
+            >
+                <div>
+                    <label
+                        for="regName"
+                        class="mb-1 block text-sm font-bold text-gray-700"
+                    >
+                        Full Name
+                    </label>
+
+                    <input
+                        type="text"
+                        id="regName"
+                        autocomplete="name"
+                        required
+                        class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        placeholder="David Ondieki"
+                    >
+                </div>
+
+                <div>
+                    <label
+                        for="regIdNumber"
+                        class="mb-1 block text-sm font-bold text-gray-700"
+                    >
+                        National ID Number
+                    </label>
+
+                    <input
+                        type="text"
+                        id="regIdNumber"
+                        required
+                        class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        placeholder="12345678"
+                    >
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label
+                            for="regBikeModel"
+                            class="mb-1 block text-sm font-bold text-gray-700"
+                        >
+                            Bike Model
+                        </label>
+
+                        <input
+                            type="text"
+                            id="regBikeModel"
+                            class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            placeholder="Boxer 150"
+                        >
+                    </div>
+
+                    <div>
+                        <label
+                            for="regNumberPlate"
+                            class="mb-1 block text-sm font-bold text-gray-700"
+                        >
+                            Number Plate
+                        </label>
+
+                        <input
+                            type="text"
+                            id="regNumberPlate"
+                            required
+                            class="w-full rounded-lg border px-3 py-2 text-sm uppercase outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            placeholder="KMDA 000Z"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label
+                        for="regPhone"
+                        class="mb-1 block text-sm font-bold text-gray-700"
+                    >
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="tel"
+                        id="regPhone"
+                        autocomplete="tel"
+                        required
+                        class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        placeholder="0712345678"
+                    >
+                </div>
+
+                <div>
+                    <label
+                        for="regEmail"
+                        class="mb-1 block text-sm font-bold text-gray-700"
+                    >
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="regEmail"
+                        autocomplete="email"
+                        required
+                        class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        placeholder="rider@bodasmart.com"
+                    >
+                </div>
+
+                <div>
+                    <label
+                        for="regPassword"
+                        class="mb-1 block text-sm font-bold text-gray-700"
+                    >
+                        Password
+                    </label>
+
+                    <div class="relative">
+                        <input
+                            type="password"
+                            id="regPassword"
+                            autocomplete="new-password"
+                            required
+                            minlength="6"
+                            oninput="checkPasswordStrength(this.value)"
+                            class="w-full rounded-lg border px-3 py-2 pr-12 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                            placeholder="At least 6 characters"
+                        >
+
+                        <button
+                            type="button"
+                            onclick="togglePasswordVisibility('regPassword', 'regEyeIcon')"
+                            aria-label="Show or hide password"
+                            class="absolute inset-y-0 right-0 px-3 text-gray-500 hover:text-gray-800"
+                        >
+                            <svg
+                                id="regEyeIcon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                class="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                />
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    stroke-width="2"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="mt-2 flex items-center gap-2">
+                        <div class="h-1.5 flex-1 overflow-hidden rounded-full bg-gray-200">
+                            <div
+                                id="strengthBar"
+                                class="h-full w-0 transition-all duration-300"
+                            ></div>
+                        </div>
+
+                        <span
+                            id="strengthText"
+                            class="whitespace-nowrap text-xs font-semibold text-gray-400"
+                        >
+                            Strength
+                        </span>
+                    </div>
+                </div>
+
+                <button
+                    type="submit"
+                    id="registerSubmitButton"
+                    class="w-full rounded-lg bg-green-600 px-4 py-2 font-bold text-white transition hover:bg-green-700"
+                >
+                    Complete Registration
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <!-- Forgot password modal -->
+    <div
+        id="forgotModal"
+        class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4"
+    >
+        <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-gray-900">
+                    Password Recovery
+                </h2>
+
+                <button
+                    type="button"
+                    onclick="closeForgotModal()"
+                    class="text-2xl text-gray-400 hover:text-gray-700"
+                >
+                    &times;
+                </button>
+            </div>
+
+            <p class="mb-4 text-sm text-gray-600">
+                Password reset email is not connected yet. Contact the administrator to reset your account password.
+            </p>
+
+            <div
+                id="forgotAlert"
+                class="mb-4 hidden rounded border p-3 text-sm font-medium"
+            ></div>
+
+            <form
+                id="forgotForm"
+                class="space-y-3"
+            >
+                <div>
+                    <label
+                        for="forgotEmail"
+                        class="mb-1 block text-xs font-bold text-gray-700"
+                    >
+                        Registered Email
+                    </label>
+
+                    <input
+                        type="email"
+                        id="forgotEmail"
+                        required
+                        class="w-full rounded-lg border px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                        placeholder="rider@bodasmart.com"
+                    >
+                </div>
+
+                <button
+                    type="submit"
+                    class="w-full rounded-lg bg-gray-700 px-4 py-2 text-sm font-bold text-white transition hover:bg-gray-800"
+                >
+                    Request Admin Assistance
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <footer class="border-t bg-white py-4 text-center text-xs text-gray-500">
+        &copy; 2026 BodaSmart Kenya. All rights reserved.
+    </footer>
+
+    <script>
+        const loginForm = document.getElementById("loginForm");
+        const registerForm = document.getElementById("registerForm");
+        const alertBox = document.getElementById("alertBox");
+
+        function switchTab(tab) {
+            const loginTabButton =
+                document.getElementById("loginTabBtn");
+
+            const registerTabButton =
+                document.getElementById("registerTabBtn");
+
+            alertBox.classList.add("hidden");
+
+            if (tab === "login") {
+                loginForm.classList.remove("hidden");
+                registerForm.classList.add("hidden");
+
+                loginTabButton.className =
+                    "w-1/2 border-b-2 border-blue-600 pb-3 text-center font-bold text-blue-600";
+
+                registerTabButton.className =
+                    "w-1/2 border-b-2 border-transparent pb-3 text-center font-bold text-gray-400 hover:text-gray-700";
+
+                return;
+            }
+
+            loginForm.classList.add("hidden");
+            registerForm.classList.remove("hidden");
+
+            loginTabButton.className =
+                "w-1/2 border-b-2 border-transparent pb-3 text-center font-bold text-gray-400 hover:text-gray-700";
+
+            registerTabButton.className =
+                "w-1/2 border-b-2 border-blue-600 pb-3 text-center font-bold text-blue-600";
+        }
+
+        function showAlert(message, type = "error") {
+            alertBox.innerText = message;
+
+            alertBox.classList.remove(
+                "hidden",
+                "border-red-200",
+                "bg-red-50",
+                "text-red-700",
+                "border-green-200",
+                "bg-green-50",
+                "text-green-700",
+                "border-blue-200",
+                "bg-blue-50",
+                "text-blue-700"
+            );
+
+            if (type === "success") {
+                alertBox.classList.add(
+                    "border-green-200",
+                    "bg-green-50",
+                    "text-green-700"
+                );
+            } else if (type === "info") {
+                alertBox.classList.add(
+                    "border-blue-200",
+                    "bg-blue-50",
+                    "text-blue-700"
+                );
+            } else {
+                alertBox.classList.add(
+                    "border-red-200",
+                    "bg-red-50",
+                    "text-red-700"
+                );
+            }
+        }
+
+        function showForgotAlert(message, type = "info") {
+            const forgotAlert =
+                document.getElementById("forgotAlert");
+
+            forgotAlert.innerText = message;
+
+            forgotAlert.classList.remove(
+                "hidden",
+                "border-red-200",
+                "bg-red-50",
+                "text-red-700",
+                "border-blue-200",
+                "bg-blue-50",
+                "text-blue-700"
+            );
+
+            if (type === "error") {
+                forgotAlert.classList.add(
+                    "border-red-200",
+                    "bg-red-50",
+                    "text-red-700"
+                );
+            } else {
+                forgotAlert.classList.add(
+                    "border-blue-200",
+                    "bg-blue-50",
+                    "text-blue-700"
+                );
+            }
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+
+            if (input.type === "password") {
+                input.type = "text";
+
+                icon.innerHTML = `
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18"
+                    />
+                `;
+
+                return;
+            }
+
+            input.type = "password";
+
+            icon.innerHTML = `
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                />
+            `;
+        }
+
+        function checkPasswordStrength(password) {
+            const strengthBar =
+                document.getElementById("strengthBar");
+
+            const strengthText =
+                document.getElementById("strengthText");
+
+            if (!password) {
+                strengthBar.style.width = "0%";
+                strengthBar.className = "h-full w-0";
+                strengthText.innerText = "Strength";
+                strengthText.className =
+                    "whitespace-nowrap text-xs font-semibold text-gray-400";
+                return;
+            }
+
+            let score = 0;
+
+            if (password.length >= 6) score++;
+            if (password.length >= 10) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            if (score <= 2) {
+                strengthBar.style.width = "33%";
+                strengthBar.className =
+                    "h-full bg-red-500 transition-all duration-300";
+
+                strengthText.innerText = "Weak";
+                strengthText.className =
+                    "whitespace-nowrap text-xs font-semibold text-red-500";
+            } else if (score <= 4) {
+                strengthBar.style.width = "66%";
+                strengthBar.className =
+                    "h-full bg-yellow-500 transition-all duration-300";
+
+                strengthText.innerText = "Medium";
+                strengthText.className =
+                    "whitespace-nowrap text-xs font-semibold text-yellow-600";
+            } else {
+                strengthBar.style.width = "100%";
+                strengthBar.className =
+                    "h-full bg-green-500 transition-all duration-300";
+
+                strengthText.innerText = "Strong";
+                strengthText.className =
+                    "whitespace-nowrap text-xs font-semibold text-green-600";
+            }
+        }
+
+        function getSafeReturnUrl() {
+            const storedUrl =
+                sessionStorage.getItem("return_after_login");
+
+            if (
+                storedUrl &&
+                storedUrl.startsWith("/") &&
+                !storedUrl.startsWith("//")
+            ) {
+                return storedUrl;
+            }
+
+            return "/";
+        }
+
+        async function requestJson(url, options = {}) {
+            const response = await fetch(url, options);
+
+            let data = {};
+
+            try {
+                data = await response.json();
+            } catch {
+                data = {};
+            }
+
+            return {
+                response,
+                data
+            };
+        }
+
+        loginForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const email = document
+                .getElementById("loginEmail")
+                .value
+                .trim()
+                .toLowerCase();
+
+            const password = document
+                .getElementById("loginPassword")
+                .value;
+
+            const submitButton =
+                document.getElementById("loginSubmitButton");
+
+            submitButton.disabled = true;
+            submitButton.innerText = "Signing in...";
+
+            try {
+                const { response, data } = await requestJson(
+                    "/api/auth/login",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            email,
+                            password
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    showAlert(
+                        data.error || "Invalid email or password."
+                    );
+
+                    return;
+                }
+
+                /*
+                 * This key must match index.html.
+                 * The full profile is attached to every recorded trip.
+                 */
+                const riderProfile = {
+                    id: data.id,
+                    name: data.name,
+                    email: data.email,
+                    id_number: data.id_number,
+                    number_plate: data.number_plate,
+                    bike_model: data.bike_model,
+                    phone_number: data.phone_number
+                };
+
+                localStorage.setItem(
+                    "bodasmart_user",
+                    JSON.stringify(riderProfile)
+                );
+
+                // Remove old profile keys to prevent stale data.
+                localStorage.removeItem("user");
+                localStorage.removeItem("rider");
+
+                const returnUrl = getSafeReturnUrl();
+
+                sessionStorage.removeItem(
+                    "return_after_login"
+                );
+
+                showAlert(
+                    `Welcome back, ${riderProfile.name}. Redirecting...`,
+                    "success"
+                );
+
+                window.setTimeout(() => {
+                    window.location.href = returnUrl;
+                }, 500);
+            } catch (error) {
+                console.error("Login error:", error);
+                showAlert(
+                    "Could not connect to the server. Make sure BodaSmart is running."
+                );
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerText = "Sign In to Portal";
+            }
+        });
+
+        registerForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const payload = {
+                name: document
+                    .getElementById("regName")
+                    .value
+                    .trim(),
+
+                id_number: document
+                    .getElementById("regIdNumber")
+                    .value
+                    .trim(),
+
+                bike_model: document
+                    .getElementById("regBikeModel")
+                    .value
+                    .trim() || "Standard",
+
+                number_plate: document
+                    .getElementById("regNumberPlate")
+                    .value
+                    .trim()
+                    .toUpperCase(),
+
+                phone_number: document
+                    .getElementById("regPhone")
+                    .value
+                    .trim(),
+
+                email: document
+                    .getElementById("regEmail")
+                    .value
+                    .trim()
+                    .toLowerCase(),
+
+                password: document
+                    .getElementById("regPassword")
+                    .value
+            };
+
+            if (payload.password.length < 6) {
+                showAlert(
+                    "Password must contain at least 6 characters."
+                );
+
+                return;
+            }
+
+            const submitButton =
+                document.getElementById("registerSubmitButton");
+
+            submitButton.disabled = true;
+            submitButton.innerText = "Creating account...";
+
+            try {
+                const { response, data } = await requestJson(
+                    "/api/auth/register",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(payload)
+                    }
+                );
+
+                if (!response.ok) {
+                    showAlert(
+                        data.error || "Registration failed."
+                    );
+
+                    return;
+                }
+
+                document.getElementById("loginEmail").value =
+                    payload.email;
+
+                document.getElementById("loginPassword").value =
+                    "";
+
+                showAlert(
+                    "Registration successful. You can now log in.",
+                    "success"
+                );
+
+                switchTab("login");
+            } catch (error) {
+                console.error("Registration error:", error);
+                showAlert(
+                    "Could not connect to the server. Make sure BodaSmart is running."
+                );
+            } finally {
+                submitButton.disabled = false;
+                submitButton.innerText = "Complete Registration";
+            }
+        });
+
+        function openForgotModal() {
+            const modal =
+                document.getElementById("forgotModal");
+
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+
+            document.getElementById("forgotAlert")
+                .classList.add("hidden");
+        }
+
+        function closeForgotModal() {
+            const modal =
+                document.getElementById("forgotModal");
+
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+
+            document.getElementById("forgotForm").reset();
+        }
+
+        document
+            .getElementById("forgotForm")
+            .addEventListener("submit", (event) => {
+                event.preventDefault();
+
+                showForgotAlert(
+                    "Your request is noted. Please contact the administrator to reset this account password."
+                );
+            });
+
+        document
+            .getElementById("forgotModal")
+            .addEventListener("click", (event) => {
+                if (event.target.id === "forgotModal") {
+                    closeForgotModal();
+                }
+            });
+    </script>
+</body>
+</html>

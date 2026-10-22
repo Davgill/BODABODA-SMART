@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BodaSmart Admin Audit &amp; Configuration Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+    <nav class="bg-blue-600 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-wide">BodaSmart Admin Control Panel</h1>
+            <a href="/" class="text-sm bg-blue-700 hover:bg-blue-800 px-3 py-2 rounded transition font-medium">Go to Rider Portal</a>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 py-8 space-y-8">
+
+        <!-- Metrics & Configuration Control -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                <p class="text-xs text-gray-500 uppercase font-semibold">Total Trips Logged</p>
+                <p id="metricTotalTrips" class="text-2xl font-bold text-gray-800 mt-2">Loading...</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                <p class="text-xs text-gray-500 uppercase font-semibold">Total Revenue (KSh)</p>
+                <p id="metricTotalRevenue" class="text-2xl font-bold text-gray-800 mt-2">Loading...</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-purple-500">
+                <p class="text-xs text-gray-500 uppercase font-semibold">Total Distance Covered</p>
+                <p id="metricTotalDistance" class="text-2xl font-bold text-gray-800 mt-2">Loading...</p>
+            </div>
+
+            <!-- Admin Fuel Price Modifier Card -->
+            <div class="bg-white p-5 rounded-lg shadow-md border-l-4 border-amber-500 flex flex-col justify-between">
+                <div>
+                    <p class="text-xs text-amber-600 uppercase font-bold">Global Fuel Price (KSh/L)</p>
+                    <div class="flex mt-2 gap-2">
+                        <input type="number" id="adminFuelInput" class="w-full px-2 py-1 border rounded text-sm font-bold" placeholder="200">
+                        <button type="button" onclick="updateFuelPrice()" class="bg-amber-600 hover:bg-amber-700 text-white px-3 py-1 rounded text-xs font-semibold">Set</button>
+                    </div>
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1">Syncs instantly with rider portals.</p>
+            </div>
+        </div>
+
+        <!-- Trip Audit Logs Section -->
+        <section class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-xl font-bold text-gray-800">Trip Audit &amp; Destination Tracking</h3>
+                    <p class="text-sm text-gray-500">Verify rider profile credentials and exact route coordinates.</p>
+                </div>
+                <button type="button" onclick="loadAdminData()" class="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition">Refresh</button>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50 text-gray-700 uppercase text-xs font-semibold">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left">ID</th>
+                            <th scope="col" class="px-4 py-3 text-left">Rider Profile</th>
+                            <th scope="col" class="px-4 py-3 text-left">National ID</th>
+                            <th scope="col" class="px-4 py-3 text-left">Distance</th>
+                            <th scope="col" class="px-4 py-3 text-left">Fare</th>
+                            <th scope="col" class="px-4 py-3 text-left">Route (Pickup → Dropoff Coordinates)</th>
+                            <th scope="col" class="px-4 py-3 text-left">Timestamp</th>
+                            <th scope="col" class="px-4 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTripsTableBody" class="divide-y divide-gray-200 text-gray-600">
+                        <tr><td colspan="8" class="px-4 py-6 text-center text-gray-400">Loading audit logs...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Registered Riders Section -->
+        <section class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">Registered Riders Directory</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50 text-gray-700 uppercase text-xs font-semibold">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left">ID</th>
+                            <th scope="col" class="px-4 py-3 text-left">Name</th>
+                            <th scope="col" class="px-4 py-3 text-left">National ID</th>
+                            <th scope="col" class="px-4 py-3 text-left">Bike Model</th>
+                            <th scope="col" class="px-4 py-3 text-left">Plate</th>
+                            <th scope="col" class="px-4 py-3 text-left">Phone</th>
+                            <th scope="col" class="px-4 py-3 text-left">Email</th>
+                            <th scope="col" class="px-4 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminUsersTableBody" class="divide-y divide-gray-200 text-gray-600">
+                        <tr><td colspan="8" class="px-4 py-6 text-center text-gray-400">Loading users...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        async function loadAdminData() {
+            try {
+                const metricsRes = await fetch('/api/admin/metrics');
+                const metrics = await metricsRes.json();
+                document.getElementById('metricTotalTrips').innerText = metrics.total_trips;
+                document.getElementById('metricTotalRevenue').innerText = metrics.total_revenue_ksh.toLocaleString();
+                document.getElementById('metricTotalDistance').innerText = metrics.total_distance_km + ' km';
+
+                const dashRes = await fetch('/api/dashboard');
+                const dashData = await dashRes.json();
+                document.getElementById('adminFuelInput').value = dashData.fuel_price_ksh;
+
+                const tripsRes = await fetch('/api/admin/trips');
+                const tripsData = await tripsRes.json();
+                const tripsTbody = document.getElementById('adminTripsTableBody');
+                tripsTbody.innerHTML = '';
+
+                if (!tripsData.trips || tripsData.trips.length === 0) {
+                    tripsTbody.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-gray-500">No trips logged yet.</td></tr>`;
+                } else {
+                    tripsData.trips.forEach(trip => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="px-4 py-3 font-medium text-gray-900">#${trip.id}</td>
+                            <td class="px-4 py-3 font-semibold text-blue-600">${trip.rider_name || 'Guest'}</td>
+                            <td class="px-4 py-3">${trip.rider_id_number || 'N/A'}</td>
+                            <td class="px-4 py-3">${trip.distance_km} km</td>
+                            <td class="px-4 py-3 font-bold text-green-600">KSh ${trip.fare}</td>
+                            <td class="px-4 py-3 text-xs">
+                                <span class="block text-gray-500"><strong>P:</strong> (${trip.pickup_lat}, ${trip.pickup_lon})</span>
+                                <span class="block text-gray-800 mt-0.5"><strong>D:</strong> (${trip.dropoff_lat}, ${trip.dropoff_lon})</span>
+                            </td>
+                            <td class="px-4 py-3 text-xs">${trip.timestamp}</td>
+                            <td class="px-4 py-3 text-center">
+                                <button onclick="deleteTrip(${trip.id})" class="text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded text-xs font-medium">Delete</button>
+                            </td>
+                        `;
+                        tripsTbody.appendChild(tr);
+                    });
+                }
+
+                const usersRes = await fetch('/api/admin/users');
+                const usersData = await usersRes.json();
+                const usersTbody = document.getElementById('adminUsersTableBody');
+                usersTbody.innerHTML = '';
+
+                if (!usersData.users || usersData.users.length === 0) {
+                    usersTbody.innerHTML = `<tr><td colspan="8" class="px-4 py-6 text-center text-gray-500">No registered users.</td></tr>`;
+                } else {
+                    usersData.users.forEach(user => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td class="px-4 py-3 font-medium text-gray-900">#${user.id}</td>
+                            <td class="px-4 py-3 font-semibold text-gray-800">${user.name}</td>
+                            <td class="px-4 py-3">${user.id_number}</td>
+                            <td class="px-4 py-3">${user.bike_model}</td>
+                            <td class="px-4 py-3 uppercase font-mono text-xs">${user.number_plate}</td>
+                            <td class="px-4 py-3">${user.phone_number}</td>
+                            <td class="px-4 py-3">${user.email}</td>
+                            <td class="px-4 py-3 text-center">
+                                <button onclick="deleteUser(${user.id})" class="text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded text-xs font-medium">Delete</button>
+                            </td>
+                        `;
+                        usersTbody.appendChild(tr);
+                    });
+                }
+            } catch (err) {
+                console.error("Admin load error:", err);
+            }
+        }
+
+        async function updateFuelPrice() {
+            const fuel_price = parseFloat(document.getElementById('adminFuelInput').value);
+            if (isNaN(fuel_price)) return alert("Enter a valid number.");
+            
+            const res = await fetch('/api/admin/config/fuel', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fuel_price })
+            });
+            if (res.ok) alert("Global fuel price updated successfully!");
+        }
+
+        async function deleteTrip(id) {
+            if (!confirm("Delete trip log?")) return;
+            const res = await fetch(`/api/admin/trips/${id}`, { method: 'DELETE' });
+            if (res.ok) loadAdminData();
+        }
+
+        async function deleteUser(id) {
+            if (!confirm("Delete user?")) return;
+            const res = await fetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+            if (res.ok) loadAdminData();
+        }
+
+        window.addEventListener('DOMContentLoaded', loadAdminData);
+    </script>
+</body>
+</html>

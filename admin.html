@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BodaSmart Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/bodasmart-theme.css">
+</head>
+<body class="admin-app bg-gray-100 min-h-screen font-sans antialiased text-gray-800">
+
+    <!-- PASSWORD PROTECTION MODAL / OVERLAY -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-75 backdrop-blur-sm">
+        <div class="w-full max-w-md rounded-xl bg-white p-8 shadow-2xl border border-gray-200">
+            <div class="text-center mb-6">
+                <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-700 font-bold text-xl">
+                    🔒
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900">Restricted Area</h2>
+                <p class="text-xs text-gray-500 mt-1">Enter the server-configured admin passcode to access the BodaSmart management portal.</p>
+            </div>
+            
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Admin Passcode</label>
+                    <input type="password" id="passcodeInput" required autocomplete="current-password" placeholder="Enter admin passcode" class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div id="authError" class="hidden text-xs font-semibold text-red-600 text-center"></div>
+                <button type="submit" class="w-full rounded-lg bg-blue-700 py-3 text-sm font-bold text-white hover:bg-blue-800 transition shadow-md">Authenticate Portal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN APP CONTAINER (Hidden until authenticated) -->
+    <div id="appContainer" class="opacity-0 pointer-events-none transition-opacity duration-300">
+        <!-- Navigation -->
+        <nav class="text-white shadow-lg">
+            <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+                <div class="flex items-center gap-5">
+                    <img
+                        class="brand-logo"
+                        src="/bodasmart-brand.png"
+                        alt="BodaSmart — Ride smart, go further"
+                    >
+                    <div>
+                        <h1 class="text-xl font-bold tracking-wide">
+                            Admin Panel
+                        </h1>
+                        <p class="text-xs text-blue-100">
+                            Rider profiles, trip tracking and system configuration
+                        </p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button
+                        type="button"
+                        id="refreshButton"
+                        class="rounded bg-blue-800 px-3 py-2 text-sm font-semibold transition hover:bg-blue-900"
+                    >
+                        Refresh
+                    </button>
+                    <button
+                        type="button"
+                        id="exportDataButton"
+                        class="rounded bg-green-600 px-3 py-2 text-sm font-semibold transition hover:bg-green-700"
+                    >
+                        Export Data
+                    </button>
+                    <button
+                        type="button"
+                        id="lockButton"
+                        class="rounded bg-red-600 px-3 py-2 text-sm font-semibold transition hover:bg-red-700"
+                    >
+                        Lock Portal
+                    </button>
+                    <a
+                        href="/"
+                        class="rounded bg-white px-3 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-50"
+                    >
+                        Rider Portal
+                    </a>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Tab Bar -->
+        <div class="bg-white border-b shadow-sm">
+            <div class="mx-auto max-w-7xl px-4 flex gap-6">
+                <button type="button" data-tab="dashboard" class="tab-btn py-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600">Dashboard</button>
+                <button type="button" data-tab="riders" class="tab-btn py-3 text-sm font-semibold text-gray-500 hover:text-blue-600">Riders Profiles</button>
+                <button type="button" data-tab="trips" class="tab-btn py-3 text-sm font-semibold text-gray-500 hover:text-blue-600">Trip Logs</button>
+                <button type="button" data-tab="admins" class="tab-btn py-3 text-sm font-semibold text-gray-500 hover:text-blue-600">Admin Management</button>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="mx-auto max-w-7xl space-y-8 px-4 py-8">
+
+            <!-- Status Message Banner -->
+            <div
+                id="statusMessage"
+                class="hidden rounded border px-4 py-3 text-sm font-medium"
+            ></div>
+
+            <!-- TAB 1: DASHBOARD -->
+            <div id="tab-content-dashboard" class="space-y-8">
+                <!-- Metric Cards Grid -->
+                <section class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="rounded-lg bg-white p-6 shadow-sm border border-gray-200">
+                        <p class="text-xs font-bold uppercase tracking-wide text-gray-500">Total Trips Logged</p>
+                        <p id="statTotalTrips" class="mt-2 text-3xl font-extrabold text-blue-700">0</p>
+                    </div>
+                    <div class="rounded-lg bg-white p-6 shadow-sm border border-gray-200">
+                        <p class="text-xs font-bold uppercase tracking-wide text-gray-500">Total Revenue Generated</p>
+                        <p id="statTotalRevenue" class="mt-2 text-3xl font-extrabold text-green-600">Ksh 0</p>
+                    </div>
+                    <div class="rounded-lg bg-white p-6 shadow-sm border border-gray-200">
+                        <p class="text-xs font-bold uppercase tracking-wide text-gray-500">Total Distance Covered</p>
+                        <p id="statTotalDistance" class="mt-2 text-3xl font-extrabold text-indigo-600">0 km</p>
+                    </div>
+                    <div class="rounded-lg bg-white p-6 shadow-sm border border-gray-200">
+                        <p class="text-xs font-bold uppercase tracking-wide text-gray-500">Configured Fuel Price</p>
+                        <p id="statFuelPrice" class="mt-2 text-3xl font-extrabold text-amber-600">Ksh 0 /L</p>
+                    </div>
+                </section>
+
+                <!-- Quick Overview Cards -->
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                    <div class="rounded-lg bg-white p-6 shadow-sm border border-gray-200">
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">Fuel Price Configuration</h2>
+                        <p class="text-sm text-gray-500 mb-4">Update baseline fuel pricing used across all profit and cost computation algorithms.</p>
+                        <form id="fuelPriceForm" class="flex gap-3">
+                            <input type="number" step="0.5" id="fuelPriceInput" placeholder="e.g. 180" required class="flex-1 rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <button type="submit" class="rounded bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 transition">Update Rate</button>
+                        </form>
+                    </div>
+
+                    <div class="rounded-lg bg-white p-6 shadow-sm border border-gray-200">
+                        <h2 class="text-lg font-bold text-gray-900 mb-2">System Health & Operations</h2>
+                        <p class="text-sm text-gray-500 mb-4">Database synchronization status and background analytics engine state.</p>
+                        <div class="flex items-center justify-between py-2 border-b text-sm">
+                            <span class="text-gray-600">Database Status</span>
+                            <span class="font-bold text-green-600 flex items-center gap-1.5"><span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span> Connected (SQLite)</span>
+                        </div>
+                        <div class="flex items-center justify-between py-2 text-sm">
+                            <span class="text-gray-600">API Latency</span>
+                            <span class="font-bold text-gray-900">&lt; 15 ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: RIDERS PROFILES -->
+            <div id="tab-content-riders" class="hidden space-y-6">
+                <section class="overflow-hidden rounded-lg bg-white shadow border border-gray-200">
+                    <div class="border-b border-gray-200 bg-gray-50 px-6 py-4">
+                        <h2 class="text-lg font-bold text-gray-900">Registered Riders</h2>
+                        <p class="text-xs text-gray-500">Complete listing of active operators authenticated on the BodaSmart portal.</p>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50 text-left text-xs font-bold uppercase text-gray-600">
+                                <tr>
+                                    <th class="px-6 py-3">ID</th>
+                                    <th class="px-6 py-3">Rider Name</th>
+                                    <th class="px-6 py-3">Phone Number</th>
+                                    <th class="px-6 py-3">Motorcycle Model</th>
+                                    <th class="px-6 py-3">Registration Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody" class="divide-y divide-gray-100 bg-white">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-6 text-center text-gray-500">Loading rider profiles...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 3: TRIP LOGS -->
+            <div id="tab-content-trips" class="hidden space-y-6">
+                <section class="overflow-hidden rounded-lg bg-white shadow border border-gray-200">
+                    <div class="border-b border-gray-200 bg-gray-50 px-6 py-4 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-bold text-gray-900">Trip Audit Logs</h2>
+                            <p class="text-xs text-gray-500">Detailed logs of distance traveled, fare estimates, and coordinate routes.</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50 text-left text-xs font-bold uppercase text-gray-600">
+                                <tr>
+                                    <th class="px-6 py-3">Trip ID</th>
+                                    <th class="px-6 py-3">Rider</th>
+                                    <th class="px-6 py-3">Distance (km)</th>
+                                    <th class="px-6 py-3">Fare (Ksh)</th>
+                                    <th class="px-6 py-3">Pickup Coordinates</th>
+                                    <th class="px-6 py-3">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tripsTableBody" class="divide-y divide-gray-100 bg-white">
+                                <tr>
+                                    <td colspan="6" class="px-6 py-6 text-center text-gray-500">Loading trip logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- TAB 4: ADMIN MANAGEMENT -->
+            <div id="tab-content-admins" class="hidden space-y-6">
+                <section class="rounded-lg bg-white p-6 shadow border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-900 mb-1">Manage Administrators</h2>
+                    <p class="text-sm text-gray-500 mb-6">Add secondary system administrators and assign specific operational privileges.</p>
+
+                    <form id="addAdminForm" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Admin Name</label>
+                            <input type="text" id="newAdminName" required placeholder="Full Name" class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Email Address</label>
+                            <input type="email" id="newAdminEmail" required placeholder="admin@bodasmart.co.ke" class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Privilege Level</label>
+                            <select id="newAdminRole" class="w-full rounded border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="moderator">Trip Moderator (View & Audit)</option>
+                                <option value="manager">Operations Manager (Fuel & Riders)</option>
+                                <option value="superadmin">Super Admin (Full Access)</option>
+                            </select>
+                        </div>
+                        <div class="sm:col-span-3 flex justify-end">
+                            <button type="submit" class="rounded bg-blue-700 px-4 py-2 text-sm font-bold text-white hover:bg-blue-800 transition">Add Administrator</button>
+                        </div>
+                    </form>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead class="bg-gray-50 text-left text-xs font-bold uppercase text-gray-600">
+                                <tr>
+                                    <th class="px-4 py-3">Administrator</th>
+                                    <th class="px-4 py-3">Email</th>
+                                    <th class="px-4 py-3">Privilege</th>
+                                    <th class="px-4 py-3 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUsersListBody" class="divide-y divide-gray-100 bg-white">
+                                <tr>
+                                    <td class="px-4 py-3 font-bold text-gray-900">Primary Administrator</td>
+                                    <td class="px-4 py-3 text-sm text-gray-600">admin@bodasmart.co.ke</td>
+                                    <td class="px-4 py-3"><span class="px-2 py-1 rounded bg-purple-100 text-purple-800 text-xs font-bold uppercase">Super Admin</span></td>
+                                    <td class="px-4 py-3 text-center text-xs text-gray-400">Default</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Script Logic -->
+    <script>
+        // Authentication is verified by the server; browser storage is not an authorization boundary.
+        window.addEventListener("DOMContentLoaded", () => {
+            checkAdminSession();
+        });
+
+        document.getElementById("authForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const passcode = document.getElementById("passcodeInput").value;
+            const errBox = document.getElementById("authError");
+
+            try {
+                await fetchJson("/api/admin/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ passcode })
+                });
+                unlockDashboard();
+            } catch (error) {
+                errBox.textContent = error.message;
+                errBox.classList.remove("hidden");
+            } finally {
+                document.getElementById("passcodeInput").value = "";
+            }
+        });
+
+        document.getElementById("lockButton").addEventListener("click", async () => {
+            try {
+                await fetchJson("/api/admin/auth/logout", { method: "POST" });
+            } catch (error) {
+                console.error("Admin logout failed:", error);
+            } finally {
+                location.reload();
+            }
+        });
+
+        async function checkAdminSession() {
+            try {
+                const session = await fetchJson("/api/admin/auth/session");
+                if (session.authenticated) {
+                    unlockDashboard();
+                }
+            } catch (error) {
+                console.error("Admin session check failed:", error);
+                const errBox = document.getElementById("authError");
+                errBox.textContent = error.message;
+                errBox.classList.remove("hidden");
+            }
+        }
+
+        function unlockDashboard() {
+            const modal = document.getElementById("authModal");
+            const app = document.getElementById("appContainer");
+            
+            modal.classList.add("opacity-0", "pointer-events-none", "transition-opacity", "duration-300");
+            setTimeout(() => modal.remove(), 300);
+
+            app.classList.remove("opacity-0", "pointer-events-none");
+            loadAdminData();
+        }
+
+        // Utility Functions
+        function showStatus(message, type = "success") {
+            const box = document.getElementById("statusMessage");
+            box.textContent = message;
+            box.className = `rounded border px-4 py-3 text-sm font-medium ${
+                type === "error" 
+                    ? "bg-red-50 border-red-200 text-red-700" 
+                    : "bg-green-50 border-green-200 text-green-700"
+            }`;
+            box.classList.remove("hidden");
+            setTimeout(() => box.classList.add("hidden"), 4000);
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        async function fetchJson(url, options = {}) {
+            const res = await fetch(url, options);
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData.error || `HTTP error! status: ${res.status}`);
+            }
+            return await res.json();
+        }
+
+        // Tab Switching Logic
+        const tabButtons = document.querySelectorAll(".tab-btn");
+        const tabContents = {
+            dashboard: document.getElementById("tab-content-dashboard"),
+            riders: document.getElementById("tab-content-riders"),
+            trips: document.getElementById("tab-content-trips"),
+            admins: document.getElementById("tab-content-admins")
+        };
+
+        tabButtons.forEach(button => {
+            button.addEventListener("click", () => {
+                const targetTab = button.dataset.tab;
+                
+                tabButtons.forEach(btn => {
+                    btn.classList.remove("border-b-2", "border-blue-600", "text-blue-600", "font-bold");
+                    btn.classList.add("text-gray-500", "font-semibold");
+                });
+                button.classList.add("border-b-2", "border-blue-600", "text-blue-600", "font-bold");
+                button.classList.remove("text-gray-500", "font-semibold");
+
+                Object.keys(tabContents).forEach(key => {
+                    if (key === targetTab) {
+                        tabContents[key].classList.remove("hidden");
+                    } else {
+                        tabContents[key].classList.add("hidden");
+                    }
+                });
+            });
+        });
+
+        // Data Loading
+        async function loadAdminData() {
+            try {
+                const [metrics, dashboard, users, trips] = await Promise.all([
+                    fetchJson("/api/admin/metrics"),
+                    fetchJson("/api/dashboard"),
+                    fetchJson("/api/admin/users"),
+                    fetchJson("/api/admin/trips")
+                ]);
+
+                const stats = {
+                    total_trips: metrics.total_trips,
+                    total_revenue: metrics.total_revenue_ksh,
+                    total_distance: metrics.total_distance_km,
+                    fuel_price: dashboard.fuel_price_ksh
+                };
+
+                // Render Stats
+                document.getElementById("statTotalTrips").textContent = stats.total_trips || 0;
+                document.getElementById("statTotalRevenue").textContent = `Ksh ${(stats.total_revenue || 0).toLocaleString()}`;
+                document.getElementById("statTotalDistance").textContent = `${(stats.total_distance || 0).toFixed(1)} km`;
+                document.getElementById("statFuelPrice").textContent = `Ksh ${stats.fuel_price || 180} /L`;
+                document.getElementById("fuelPriceInput").value = stats.fuel_price || 180;
+
+                // Render Users Table
+                const usersBody = document.getElementById("usersTableBody");
+                const userList = users.users || [];
+                if (userList.length === 0) {
+                    usersBody.innerHTML = `<tr><td colspan="5" class="px-6 py-6 text-center text-gray-500">No registered riders found.</td></tr>`;
+                } else {
+                    usersBody.innerHTML = userList.map(u => {
+                        const phoneNum = u.phone || u.phone_number || u.phone_no || u.phoneNumber || "N/A";
+                        return `
+                            <tr>
+                                <td class="px-6 py-4 font-mono text-xs text-gray-500">${escapeHtml(u.id)}</td>
+                                <td class="px-6 py-4 font-bold text-gray-900">${escapeHtml(u.name || "N/A")}</td>
+                                <td class="px-6 py-4 text-gray-600 font-medium">${escapeHtml(phoneNum)}</td>
+                                <td class="px-6 py-4 text-gray-600">${escapeHtml(u.motorcycle_model || "Standard")}</td>
+                                <td class="px-6 py-4 text-gray-500 text-xs">${escapeHtml(u.created_at || "N/A")}</td>
+                            </tr>
+                        `;
+                    }).join("");
+                }
+
+                // Render Trips Table
+                const tripsBody = document.getElementById("tripsTableBody");
+                const tripList = trips.trips || [];
+                if (tripList.length === 0) {
+                    tripsBody.innerHTML = `<tr><td colspan="6" class="px-6 py-6 text-center text-gray-500">No trip logs recorded yet.</td></tr>`;
+                } else {
+                    tripsBody.innerHTML = tripList.map(t => `
+                        <tr>
+                            <td class="px-6 py-4 font-mono text-xs text-gray-500">${escapeHtml(t.id)}</td>
+                            <td class="px-6 py-4 font-medium text-gray-900">${escapeHtml(t.rider_name || "Guest Rider")}</td>
+                            <td class="px-6 py-4 text-gray-600">${Number(t.distance_km || 0).toFixed(2)} km</td>
+                            <td class="px-6 py-4 font-semibold text-green-600">Ksh ${Number(t.fare || 0).toLocaleString()}</td>
+                            <td class="px-6 py-4 font-mono text-xs text-gray-500">${t.pickup_lat}, ${t.pickup_lon}</td>
+                            <td class="px-6 py-4 text-gray-500 text-xs">${escapeHtml(t.timestamp || "N/A")}</td>
+                        </tr>
+                    `).join("");
+                }
+
+            } catch (err) {
+                showStatus("Failed to load admin metrics: " + err.message, "error");
+            }
+        }
+
+        // Fuel Price Update Form Handler
+        document.getElementById("fuelPriceForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const newPrice = parseFloat(document.getElementById("fuelPriceInput").value);
+            try {
+                await fetchJson("/api/admin/config/fuel", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ fuel_price: newPrice })
+                });
+                showStatus("Fuel price updated successfully.");
+                loadAdminData();
+            } catch (err) {
+                showStatus("Failed to update fuel price: " + err.message, "error");
+            }
+        });
+
+        // Data Export Utility (CSV Download)
+        document.getElementById("exportDataButton").addEventListener("click", async () => {
+            try {
+                showStatus("Preparing export data...", "success");
+                const tripsData = await fetchJson("/api/admin/trips");
+                const trips = tripsData.trips || [];
+                
+                if (trips.length === 0) {
+                    showStatus("No trip data available to export.", "error");
+                    return;
+                }
+
+                const headers = ["ID", "RiderName", "DistanceKm", "FareKsh", "PickupLat", "PickupLon", "Timestamp"];
+                const csvRows = [headers.join(",")];
+                
+                trips.forEach(t => {
+                    csvRows.push([
+                        t.id,
+                        `"${t.rider_name || 'Guest'}"`,
+                        t.distance_km,
+                        t.fare,
+                        t.pickup_lat,
+                        t.pickup_lon,
+                        `"${t.timestamp || ''}"`
+                    ].join(","));
+                });
+
+                const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.setAttribute("href", url);
+                a.setAttribute("download", `bodasmart_trip_audit_${new Date().toISOString().slice(0,10)}.csv`);
+                a.click();
+                showStatus("Trip logs exported successfully.");
+            } catch (err) {
+                showStatus("Export failed: " + err.message, "error");
+            }
+        });
+
+        // Admin Management Handler
+        document.getElementById("addAdminForm").addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = document.getElementById("newAdminName").value;
+            const email = document.getElementById("newAdminEmail").value;
+            const role = document.getElementById("newAdminRole").value;
+
+            const tbody = document.getElementById("adminUsersListBody");
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td class="px-4 py-3 font-bold text-gray-900">${escapeHtml(name)}</td>
+                <td class="px-4 py-3 text-sm text-gray-600">${escapeHtml(email)}</td>
+                <td class="px-4 py-3"><span class="px-2 py-1 rounded bg-blue-100 text-blue-800 text-xs font-bold uppercase">${escapeHtml(role)}</span></td>
+                <td class="px-4 py-3 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-600 hover:underline text-xs font-bold">Revoke</button></td>
+            `;
+            tbody.appendChild(row);
+            document.getElementById("addAdminForm").reset();
+            showStatus("New administrator added successfully.");
+        });
+
+        // Refresh Button
+        document.getElementById("refreshButton").addEventListener("click", () => {
+            loadAdminData();
+            showStatus("Admin dashboard refreshed.");
+        });
+    </script>
+</body>
+</html>

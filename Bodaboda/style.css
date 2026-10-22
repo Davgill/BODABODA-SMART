@@ -1,0 +1,242 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f6f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 420px;
+    background: #ffffff;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    overflow: hidden;
+}
+
+/* Header */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.app-header h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111;
+}
+
+.settings-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    padding: 8px;
+    border-radius: 50%;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-btn:hover {
+    background-color: #f0f2f5;
+}
+
+/* Trip Card Container */
+.trip-card {
+    background: #ffffff;
+    border: 1px solid #eaeaea;
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+    margin-bottom: 20px;
+}
+
+.location-inputs {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.pickup-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.dropoff-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid #edf2f7;
+}
+
+.label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.location-text p {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-top: 2px;
+}
+
+.dropoff-row input {
+    border: none;
+    background: transparent;
+    font-size: 15px;
+    color: #1e293b;
+    outline: none;
+    width: 100%;
+}
+
+.dropoff-row input::placeholder {
+    color: #94a3b8;
+}
+
+/* Dots and connector line */
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex-shrink: 0;
+}
+
+.blue-dot {
+    background-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.red-dot {
+    background-color: #dc2626;
+}
+
+.connector-line {
+    position: absolute;
+    left: 4px;
+    top: 18px;
+    bottom: 35px;
+    width: 2px;
+    background-color: #e2e8f0;
+    display: flex;
+    align-items: flex-end;
+}
+
+/* Calculate Button */
+.calculate-btn {
+    width: 100%;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.calculate-btn:hover {
+    background-color: #1d4ed8;
+}
+
+.calculate-btn:active {
+    transform: scale(0.98);
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.metric-box {
+    background: #ffffff;
+    border: 1px solid #eaeaea;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.metric-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.green-text {
+    color: #16a34a;
+}
+
+/* Efficiency Banner */
+.efficiency-banner {
+    background: #f0fdf4;
+    border: 1px solid #dcfce7;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.efficiency-icon {
+    font-size: 20px;
+    background: #dcfce7;
+    padding: 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.efficiency-content h3 {
+    font-size: 14px;
+    font-weight: 700;
+    color: #166534;
+    margin-bottom: 4px;
+}
+
+.efficiency-content p {
+    font-size: 12px;
+    color: #15803d;
+    line-height: 1.4;
+}

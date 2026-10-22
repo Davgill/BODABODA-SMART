@@ -1,0 +1,176 @@
+:root {
+    color-scheme: light;
+    --brand-ink: #071b12;
+    --brand-ink-soft: #10291b;
+    --brand-green: #258d3b;
+    --brand-lime: #68f51e;
+    --brand-lime-soft: #efffe5;
+    --brand-canvas: #f3f8f1;
+    --brand-border: #dce8d9;
+    --brand-muted: #667568;
+}
+
+body.rider-app,
+body.login-app,
+body.admin-app {
+    background: var(--brand-canvas) !important;
+    color: var(--brand-ink) !important;
+}
+
+body.rider-app {
+    font-family: "Inter", Arial, sans-serif;
+}
+
+body.rider-app nav[style*="#2563eb"],
+body.login-app > header,
+body.admin-app nav {
+    background: var(--brand-ink) !important;
+    color: #fff !important;
+}
+
+.brand-logo {
+    display: block;
+    width: 238px;
+    height: auto;
+    border-radius: 5px;
+}
+
+.rider-app .top-nav-inner {
+    min-height: 88px;
+}
+
+.rider-app #loginLink,
+.rider-app a[href="/admin"],
+.login-app a[href="/"] {
+    background: var(--brand-green) !important;
+    color: #fff !important;
+}
+
+.rider-app #logoutButton,
+.admin-app #lockButton {
+    background: #b63b32 !important;
+}
+
+.rider-app .card,
+.login-app main > div,
+.admin-app #authModal > div,
+.admin-app #tab-content-dashboard > section > div,
+.admin-app #tab-content-dashboard > div > div {
+    background: #fff !important;
+    border-color: var(--brand-border) !important;
+    box-shadow: 0 8px 24px rgba(7, 27, 18, 0.07) !important;
+}
+
+.rider-app .card {
+    border-radius: 16px;
+}
+
+.rider-app .btn-primary,
+.login-app #loginSubmitButton,
+.login-app #registerSubmitButton,
+.admin-app .bg-blue-700,
+.admin-app .bg-blue-600 {
+    background: var(--brand-green) !important;
+    color: #fff !important;
+}
+
+.rider-app .btn-primary:hover,
+.login-app #loginSubmitButton:hover,
+.login-app #registerSubmitButton:hover,
+.admin-app .hover\:bg-blue-800:hover,
+.admin-app .hover\:bg-blue-700:hover {
+    background: var(--brand-ink-soft) !important;
+}
+
+.rider-app .btn-green,
+.admin-app .bg-green-600,
+.admin-app .bg-green-700 {
+    background: #31884a !important;
+}
+
+.rider-app .tab-btn.active,
+.admin-app .text-blue-700,
+.admin-app .text-blue-600,
+.admin-app .border-blue-600,
+.login-app .text-blue-600,
+.login-app .border-blue-600 {
+    color: var(--brand-green) !important;
+    border-color: var(--brand-green) !important;
+}
+
+.admin-app .bg-blue-800,
+.admin-app .bg-blue-900 {
+    background: var(--brand-ink-soft) !important;
+}
+
+.admin-app .bg-blue-100,
+.login-app .bg-blue-100 {
+    background: var(--brand-lime-soft) !important;
+}
+
+.admin-app .text-blue-100,
+.login-app .text-blue-100 {
+    color: #d7f6ca !important;
+}
+
+.admin-app .text-indigo-600,
+.admin-app .text-green-600 {
+    color: var(--brand-green) !important;
+}
+
+.rider-app .tab-btn.active {
+    border-bottom-color: var(--brand-green) !important;
+}
+
+.rider-app .profile-item {
+    background: #f7fbf5;
+    border-color: var(--brand-border);
+}
+
+.rider-app .destination-result:hover,
+.rider-app .destination-result:focus {
+    border-color: var(--brand-green);
+    background: var(--brand-lime-soft);
+}
+
+.rider-app .input-field:focus,
+.login-app input:focus,
+.admin-app input:focus {
+    border-color: var(--brand-green) !important;
+    box-shadow: 0 0 0 3px rgba(104, 245, 30, 0.18) !important;
+}
+
+.login-app main > div {
+    border: 1px solid var(--brand-border);
+    border-radius: 18px;
+}
+
+.admin-app > .bg-white.border-b {
+    border-color: var(--brand-border) !important;
+}
+
+.admin-app .tab-btn {
+    border-color: transparent;
+}
+
+.admin-app .tab-btn[data-tab="dashboard"] {
+    color: var(--brand-green) !important;
+    border-color: var(--brand-green) !important;
+}
+
+.rider-app a:focus-visible,
+.rider-app button:focus-visible,
+.login-app a:focus-visible,
+.login-app button:focus-visible,
+.admin-app a:focus-visible,
+.admin-app button:focus-visible {
+    outline: 3px solid var(--brand-lime);
+    outline-offset: 2px;
+}
+
+@media (max-width: 540px) {
+    .brand-logo {
+        width: 205px;
+        max-width: 100%;
+    }
+}
